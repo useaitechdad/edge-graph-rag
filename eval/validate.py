@@ -21,7 +21,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 KINDS = ("single-hop", "multi-hop")
 QUESTION_KEYS = {"id", "kind", "question", "answer", "gold", "hops"}
-PASSAGE_KEYS = {"doc", "page", "quote"}
+PASSAGE_KEYS = {"doc", "page", "role", "quote"}
+# "answer": the passage that states the answer — the one retrieval is scored on.
+# "bridge": a passage a reader needs on the way there.
+ROLES = ("bridge", "answer")
 QUOTE_MIN = 80
 QUOTE_MAX = 400
 
@@ -79,6 +82,9 @@ def check_passage(where: str, passage: object, corpus: Corpus) -> list[str]:
         return errors
 
     doc, page, quote = passage["doc"], passage["page"], passage["quote"]
+
+    if passage["role"] not in ROLES:
+        errors.append(f"{where}: 'role' must be one of {', '.join(ROLES)}")
 
     if not isinstance(doc, str) or not doc.strip():
         errors.append(f"{where}: 'doc' must be a non-empty corpus slug")
@@ -156,6 +162,12 @@ def check_question(index: int, question: object, corpus: Corpus, seen_ids: set[s
 
     for i, passage in enumerate(gold):
         errors.extend(check_passage(f"{where} gold[{i}]", passage, corpus))
+
+    roles = [p.get("role") for p in gold if isinstance(p, dict)]
+    if "answer" not in roles:
+        errors.append(f"{where}: needs at least one gold passage with role 'answer'")
+    if kind == "multi-hop" and "bridge" not in roles:
+        errors.append(f"{where}: multi-hop needs at least one 'bridge' passage")
 
     if kind == "multi-hop":
         if len(gold) < 2:

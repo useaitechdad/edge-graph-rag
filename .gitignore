@@ -13,3 +13,4 @@ corpus/raw/
 corpus/text/
 runs/tmp/
 .DS_Store
+__pycache__/

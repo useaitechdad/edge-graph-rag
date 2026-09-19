@@ -14,8 +14,8 @@ shape of the file and that every gold quote really is on the page it claims.
   "answer": "…",
   "hops": "the contractor named in both reports",
   "gold": [
-    { "doc": "mars-climate-orbiter-mib-phase-i", "page": 17, "quote": "verbatim text from page 17, 80–400 characters" },
-    { "doc": "mars-polar-lander-ds2-loss", "page": 42, "quote": "verbatim text from page 42, 80–400 characters" }
+    { "doc": "mars-climate-orbiter-mib-phase-i", "page": 17, "role": "bridge", "quote": "verbatim text from page 17, 80–400 characters" },
+    { "doc": "mars-polar-lander-ds2-loss", "page": 42, "role": "answer", "quote": "verbatim text from page 42, 80–400 characters" }
   ]
 }
 ```
@@ -35,11 +35,13 @@ Each gold passage:
 |---------|---------|------|
 | `doc`   | string  | A corpus slug: the file is `corpus/text/<doc>.txt`. |
 | `page`  | integer | 1 or greater, and the page must exist in that file. |
+| `role`  | string  | `answer`: the passage that states the answer, and the one retrieval is scored on. `bridge`: a passage a reader needs on the way there. |
 | `quote` | string  | Verbatim from that page, 80–400 characters once whitespace is normalised. |
 
 A `multi-hop` question needs **at least two gold passages on at least two different pages**
 (the same document is fine, a second page is not optional). That is what makes it a question
-one passage cannot answer.
+one passage cannot answer. Every question needs at least one `answer` passage, and a
+`multi-hop` question at least one `bridge` as well.
 
 No other keys are allowed, on a question or on a passage — a typo should fail the build, not
 be silently ignored.

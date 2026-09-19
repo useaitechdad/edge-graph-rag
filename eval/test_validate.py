@@ -48,7 +48,7 @@ def single_hop(**overrides: object) -> dict:
         "kind": "single-hop",
         "question": "What units did the navigation team supply?",
         "answer": "Pound-seconds.",
-        "gold": [{"doc": "report", "page": 1, "quote": QUOTE_P1}],
+        "gold": [{"doc": "report", "role": "answer", "page": 1, "quote": QUOTE_P1}],
     }
     question.update(overrides)
     return question
@@ -62,8 +62,8 @@ def multi_hop(**overrides: object) -> dict:
         "answer": "The earlier lander.",
         "hops": "the contractor, named on both pages",
         "gold": [
-            {"doc": "report", "page": 1, "quote": QUOTE_P1},
-            {"doc": "report", "page": 2, "quote": QUOTE_P2},
+            {"doc": "report", "role": "bridge", "page": 1, "quote": QUOTE_P1},
+            {"doc": "report", "role": "answer", "page": 2, "quote": QUOTE_P2},
         ],
     }
     question.update(overrides)
@@ -102,51 +102,51 @@ class ValidatorTest(unittest.TestCase):
         self.assertEqual(self.run_on([single_hop()]), [])
 
     def test_quote_not_on_the_page(self) -> None:
-        wrong = single_hop(gold=[{"doc": "report", "page": 2, "quote": QUOTE_P1}])
+        wrong = single_hop(gold=[{"doc": "report", "role": "answer", "page": 2, "quote": QUOTE_P1}])
         self.assert_fails_with([wrong], "not verbatim")
 
     def test_quote_altered_by_a_word(self) -> None:
         altered = QUOTE_P1.replace("pound-seconds", "kilogram-seconds")
         self.assert_fails_with(
-            [single_hop(gold=[{"doc": "report", "page": 1, "quote": altered}])],
+            [single_hop(gold=[{"doc": "report", "role": "answer", "page": 1, "quote": altered}])],
             "not verbatim",
         )
 
     def test_quote_too_short(self) -> None:
         self.assert_fails_with(
-            [single_hop(gold=[{"doc": "report", "page": 1, "quote": "The spacecraft"}])],
+            [single_hop(gold=[{"doc": "report", "role": "answer", "page": 1, "quote": "The spacecraft"}])],
             "outside",
         )
 
     def test_quote_too_long(self) -> None:
         self.assert_fails_with(
-            [single_hop(gold=[{"doc": "report", "page": 1, "quote": "x " * 300}])],
+            [single_hop(gold=[{"doc": "report", "role": "answer", "page": 1, "quote": "x " * 300}])],
             "outside",
         )
 
     def test_missing_page(self) -> None:
         self.assert_fails_with(
-            [single_hop(gold=[{"doc": "report", "page": 9, "quote": QUOTE_P1}])],
+            [single_hop(gold=[{"doc": "report", "role": "answer", "page": 9, "quote": QUOTE_P1}])],
             "no page 9",
         )
 
     def test_missing_document(self) -> None:
         self.assert_fails_with(
-            [single_hop(gold=[{"doc": "nope", "page": 1, "quote": QUOTE_P1}])],
+            [single_hop(gold=[{"doc": "nope", "role": "answer", "page": 1, "quote": QUOTE_P1}])],
             "no corpus file",
         )
 
     def test_multi_hop_needs_two_passages(self) -> None:
         self.assert_fails_with(
-            [multi_hop(gold=[{"doc": "report", "page": 1, "quote": QUOTE_P1}])],
+            [multi_hop(gold=[{"doc": "report", "role": "answer", "page": 1, "quote": QUOTE_P1}])],
             "at least 2 gold passages",
         )
 
     def test_multi_hop_needs_two_pages(self) -> None:
         both_on_page_one = multi_hop(
             gold=[
-                {"doc": "report", "page": 1, "quote": QUOTE_P1},
-                {"doc": "report", "page": 1, "quote": QUOTE_P1},
+                {"doc": "report", "role": "bridge", "page": 1, "quote": QUOTE_P1},
+                {"doc": "report", "role": "answer", "page": 1, "quote": QUOTE_P1},
             ]
         )
         self.assert_fails_with([both_on_page_one], "2 different pages")
@@ -189,6 +189,16 @@ class ValidatorTest(unittest.TestCase):
 
         self.questions_path.unlink()
         self.assertEqual(exit_code(), 2)
+
+    def test_every_question_needs_an_answer_passage(self):
+        only_bridges = multi_hop()
+        for passage in only_bridges["gold"]:
+            passage["role"] = "bridge"
+        self.assert_fails_with([only_bridges], "role 'answer'")
+
+    def test_bad_role(self):
+        wrong = single_hop(gold=[{"doc": "report", "role": "proof", "page": 1, "quote": QUOTE_P1}])
+        self.assert_fails_with([wrong], "'role' must be one of")
 
 
 if __name__ == "__main__":
