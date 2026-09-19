@@ -1,0 +1,38 @@
+{
+	"milestone": "M3",
+	"started_utc": "2026-09-19T05:56:29+00:00",
+	"finished_utc": "2026-09-19T05:56:40+00:00",
+	"wall_seconds": 10.7,
+	"dry_run": false,
+	"model": "claude-sonnet-5",
+	"max_tokens": 2000,
+	"concurrency": 4,
+	"counts": {
+		"processed": 1,
+		"failed": 0,
+		"truncated": 0,
+		"entities": 8,
+		"relations": 9,
+		"dropped_relations": 0,
+		"retyped_entities": 0,
+		"dropped_entities": 0,
+		"duplicate_entities": 0,
+		"skipped": 0
+	},
+	"http_status_counts": {
+		"200": 1
+	},
+	"retries": 0,
+	"tokens": {
+		"input_tokens": 654,
+		"output_tokens": 1446,
+		"cache_creation_input_tokens": 2526,
+		"cache_read_input_tokens": 0,
+		"note": "summed from the usage object of every response. Tokens only — this file carries no prices, because a price that is wrong later is worse than no price at all."
+	},
+	"unexpected_response_fields": [
+		"stop_details",
+		"usage.inference_geo",
+		"usage.output_tokens_details"
+	]
+}
