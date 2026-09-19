@@ -66,3 +66,47 @@ reprint would have to be argued about. No gold passage sits on those pages.
   vector search fail, and no question is a riddle.
 - The set is frozen before retrieval code exists, so neither retriever can be tuned to it and
   it cannot be tuned to either retriever.
+
+## Amendment 1 — equivalent answer passages
+
+The first baseline run exposed a flaw in the metric above, not in the retrievers. These
+reports state the same fact in more than one place: an executive summary, a findings list, the
+body section, an appendix that reprints the section, and sometimes a second report writing up
+the same mishap. Each question carries exactly one `answer` passage, so a retriever that
+returns a *different* passage stating the same answer scores as a miss. That is a mistake
+about what was asked, and it would be made against both retrievers unevenly — whichever one
+happens to favour summaries over body text pays for it.
+
+**The rule.** A passage is an equivalent answer passage only if a reader given that passage
+alone, plus the question, could give the full answer the question asks for — the same standard
+the original gold passage meets. For a multi-hop question the passage has to state the final
+attribute *for the correct target entity*: the chair of the right board, not the chair of
+another one. A passage that mentions the topic, or gives one of two things asked for, or names
+the outcome without the mechanism the question asks about, is not equivalent. Where it was
+arguable, the passage was left out and the reason recorded.
+
+**How they were found.** By plain lexical search of `corpus/text/` — the answer's distinctive
+values, names and phrases, plus the variants this corpus forces (spelled-out numbers, OCR that
+glues words together or breaks them, the synonyms the reports themselves use) — by an author
+who had seen no retrieval output of any kind: no `/search` call, no eval or ingest receipt, no
+reasoning about what an embedding model would or would not find. The search terms used for
+each question, the passages accepted, and the borderline ones rejected with their reason, are
+in `equivalents.notes.md`. Equivalents are `answer` passages only; the amendment adds no
+bridges.
+
+**What did not change.** `questions.json` is untouched, byte for byte: the frozen set is still
+the frozen set, and the equivalents live beside it in `equivalents.json`, which
+`validate.py` holds to the same verbatim-on-the-page rules plus three of its own — the page
+has to be one that is indexed, an equivalent may not restate its own question's gold answer,
+and two equivalents may not be one passage read twice.
+
+**Both numbers, always together.** Every run reports **strict** recall, the rule as frozen
+with only the gold answer passage counting, beside **amended** recall, where any equivalent
+counts too. Both retrievers are scored with the same amended rule, on the same passages, so
+the comparison the project exists to make is unaffected either way; the amendment moves both
+numbers up or neither. Each question also records whether its hit landed on the `gold` passage
+or on an `equivalent`.
+
+Receipts written before this amendment cannot be re-scored offline: they record each
+question's rank, not the chunks that were returned. `run.py` now stores the ranked chunk ids,
+so a future receipt can be re-scored against a later amendment without another run.

@@ -67,3 +67,47 @@ python3 eval/test_validate.py            # the validator's own fixture tests
 
 Exit codes: `0` everything passed, `1` at least one question failed, `2` the files could not
 be read. `questions.json` itself arrives in M1; until then `validate.py` exits `2`.
+
+## `eval/equivalents.json` — Amendment 1
+
+`questions.json` is frozen and stays that way. The other places these reports state the same
+answer live in a second file beside it, which `validate.py` gates as well:
+
+```json
+{
+  "amendment": 1,
+  "passages": {
+    "q03": [
+      { "doc": "mars-polar-lander-ds2-loss", "page": 134, "quote": "verbatim text from page 134, 80–400 characters" }
+    ]
+  }
+}
+```
+
+| Field       | Type    | Rule |
+|-------------|---------|------|
+| `amendment` | integer | The amendment this file is, and the one `scoring.py` expects. |
+| `passages`  | object  | Question `id` → array of passages. A question with no equivalent simply does not appear. |
+
+A passage has `doc`, `page` and `quote` only — no `role`, because every one of them is an
+`answer`; the amendment adds no bridges. `doc`, `page` and `quote` follow the same rules as a
+gold passage above, checked by the same code, plus four of their own:
+
+- the question `id` has to exist in `questions.json`;
+- the `doc` has to be in `corpus/MANIFEST.json`;
+- the `page` has to be one that is **indexed** — `mco-mib-project-management` 58–105 is the
+  Phase I reprint and is not (see `eval/DESIGN.md`), so a quote from there is rejected;
+- an equivalent may not restate its own question's gold answer passage, and two equivalents
+  for one question may not overlap each other by more than half — that would be one passage
+  counted twice.
+
+`eval/equivalents.notes.md` is the audit trail: the answer, the search terms, and the
+borderline passages that were rejected, question by question.
+
+```sh
+python3 eval/validate.py     # checks questions.json, then equivalents.json if it is there
+python3 eval/validate.py --equivalents <path> --manifest <path>
+```
+
+An absent `equivalents.json` is not a failure: it means the checkout is the frozen set as it
+was, and every run then scores strictly.

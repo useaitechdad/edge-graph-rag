@@ -1,0 +1,189 @@
+{
+  "amendment": 1,
+  "passages": {
+    "q01": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 14,
+        "quote": "it was discovered that the small forces ∆V’s reported by the spacecraft engineers for use in orbit determination solutions was low by a factor of 4.45 (1 pound force=4.45 Newtons) because the impulse bit data contained in the AMD file was delivered in lb-sec instead of the specified and expected units of Newton-sec."
+      },
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 17,
+        "quote": "In the case of the ground software, the impulse bit reported to the AMD file was in English units of pounds (force)-seconds (lbf-s) rather than the metric units specified. Subsequent processing of the impulse bit values from the AMD file by the navigation software underestimated the effect of the thruster firings on the spacecraft trajectory by a factor of 4.45 (1 pound force=4.45 Newtons)."
+      }
+    ],
+    "q03": [
+      {
+        "doc": "mars-program-independent-assessment",
+        "page": 21,
+        "quote": "Themostprobablecauseof theMPL failure isprematureshutdownof thelanderengines dueto spurioussignalsgeneratedatlanderleg deploymentduringdescent.Thespurious signalswouldbea falseindicationthatthelanderhadlanded,resultingin premature shutdownof thelanderengines."
+      },
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 134,
+        "quote": "The resulting software design recorded the spurious signals generated at leg deployment as valid touchdown events. When the sensor data were enabled at an altitude of 40 meters, the engines would immediately shut down. The lander would free fall to the surface, impacting at a velocity of 22 meters per second (50 miles per hour), and be destroyed."
+      }
+    ],
+    "q05": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 18,
+        "quote": "G-switch sensors were in an inverted orientation, per an erroneous design, and were unable to sense sample return capsule deceleration during atmospheric entry and initiate parachute deployments."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 42,
+        "quote": "The inversion of the G-switch sensors made it impossible for the masses in each sensor to compress their restraining springs, and activate the switch. As a result, the circuit to the EST could not be closed, preventing the timer that controlled the pyrotechnic firings from being initiated."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 45,
+        "quote": "The Genesis Project had a number of interrelated issues that led to the inversion of the G-switch sensors -- the proximate cause that resulted in the drogue parachute deployment mishap."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 159,
+        "quote": "The Genesis Project had a number of interrelated issues that led to the inversion of the G-switch sensors -- the proximate cause that resulted in the drogue parachute deployment mishap."
+      }
+    ],
+    "q06": [
+      {
+        "doc": "contour-mib",
+        "page": 9,
+        "quote": "The probable proximate cause, alternate proximate causes, possible root causes, and significant observations are: Probable Proximate Cause • Overheating of the CONTOUR spacecraft by the solid rocket motor exhaust plume"
+      }
+    ],
+    "q07": [
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 30,
+        "quote": "Proximate Cause: The NOAA N-PRIME satellite fell because the LMSSC operations team failed to follow procedures to properly configure the TOC, such that the 24 bolts that were needed to secure the TOC adapter plate to the TOC were not installed."
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 39,
+        "quote": "The spacecraft fell because the TIROS adapter plate to which it was mounted was not bolted to the TOC adapter plate with the required 24 bolts."
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 84,
+        "quote": "The proximate cause of The NOAA N-PRIME mishap was the failure of the LMSSC operations team to follow procedures to properly configure the TOC, such that the 24 bolts that were needed to secure the TOC adapter plate to the TOC were not installed."
+      }
+    ],
+    "q08": [
+      {
+        "doc": "mco-mib-project-management",
+        "page": 9,
+        "quote": "The aim is to make Mission Success First a way of life — a concern and responsibility for everyone involved in NASA programs."
+      },
+      {
+        "doc": "mco-mib-project-management",
+        "page": 12,
+        "quote": "The Board finds that implementation of the “Faster, Better, Cheaper” philosophy must be refined at this stage in a new context: Mission Success First."
+      },
+      {
+        "doc": "mco-mib-project-management",
+        "page": 14,
+        "quote": "The aim of the agenda is to make Mission Success First a way of life — a concern and responsibility for everyone involved in NASA programs."
+      },
+      {
+        "doc": "mco-mib-project-management",
+        "page": 24,
+        "quote": "We propose to establish Mission Success First as the highest priority within all levels of NASA. To do so, NASA’s culture — and current techniques for program and project management — must evolve."
+      },
+      {
+        "doc": "mco-mib-project-management",
+        "page": 32,
+        "quote": "Our emerging Mission Success First vision focuses on mission success by utilizing every individual in the organization to continuously employ solid engineering discipline, to take personal ownership for their product development efforts,"
+      }
+    ],
+    "q12": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 18,
+        "quote": "G-switch sensors were in an inverted orientation, per an erroneous design, and were unable to sense sample return capsule deceleration during atmospheric entry and initiate parachute deployments."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 42,
+        "quote": "The inversion of the G-switch sensors made it impossible for the masses in each sensor to compress their restraining springs, and activate the switch. As a result, the circuit to the EST could not be closed, preventing the timer that controlled the pyrotechnic firings from being initiated."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 45,
+        "quote": "The Genesis Project had a number of interrelated issues that led to the inversion of the G-switch sensors -- the proximate cause that resulted in the drogue parachute deployment mishap."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 159,
+        "quote": "The Genesis Project had a number of interrelated issues that led to the inversion of the G-switch sensors -- the proximate cause that resulted in the drogue parachute deployment mishap."
+      }
+    ],
+    "q13": [
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 31,
+        "quote": "On that basis, the project decided not to pro_'ide EDL telemetry. Senior Headquarters and Laboratory management concurred in this decision. 5. 1.1.1 Findings and Assessment The omission of EDL telemetry was justifiable from a project perspective."
+      },
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 138,
+        "quote": "The lack of telemetry during EDL made it impossible to determine if the landing leg deployment transients set the touchdown state to True during the leg deployment. Since there was no post-landed telemetry, there is no information regarding the time of the descent engine thrust termination."
+      }
+    ],
+    "q14": [
+      {
+        "doc": "mars-program-independent-assessment",
+        "page": 21,
+        "quote": "Themostprobablecauseof theMPL failure isprematureshutdownof thelanderengines dueto spurioussignalsgeneratedatlanderleg deploymentduringdescent.Thespurious signalswouldbea falseindicationthatthelanderhadlanded,resultingin premature shutdownof thelanderengines."
+      }
+    ],
+    "q19": [
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 27,
+        "quote": "The second approach was to utilize the Human Factors Analysis and Classification System (HFACS) (2000) to provide a comprehensive framework for identifying and analyzing human error"
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 41,
+        "quote": "The primary mishap analysis was performed using the Human Factors Analysis and Classification system (HFACS) to identify, analyze, and classify the human errors."
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 79,
+        "quote": "Human Factors Analysis and Classification System (HFACS) Methodology The Human Factors Analysis and Classification System (HFACS) provide a comprehensive framework for identifying and analyzing human error."
+      }
+    ],
+    "q23": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 34,
+        "quote": "the Associate Administrator for the Science Mission Direc­ torate established the NASA Genesis MIB and designated Dr. Michael Ryschke­ witsch, Goddard Space Flight Center (GSFC) Director of Applied Engineering and Technology, as chairman."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 215,
+        "quote": "NASA’s Associate Administrator for Science Al Diaz announced today, Dr. Michael Ryschkewitsch, Director of the Applied Engineering and Technol­ ogy Directorate at NASA’s Goddard Space Flight Center (GSFC), Greenbelt, Md., would lead the Genesis Mishap Investigation Board (MIB)."
+      }
+    ],
+    "q24": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 46,
+        "quote": "5. Failure to ‘test as you fly’ • Root Cause 5.1: G-switch sensor was not identified as having a critical alignment in the Pointing and Alignment Document (Phasing Plan)."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 66,
+        "quote": "5. Failure to ‘test as you fly’ Root Cause 5.1: G-switch sensor was not identified as having a critical alignment in the Pointing and Alignment Document (Phasing Plan)."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 180,
+        "quote": "Root Cause 5.1: G-switch sensor not identified as having a critical alignment in the Pointing and Alignment Document (Phasing Plan). In addition to deleting the test for schedule reasons, the Pointing Budget and Alignment Criteria Document (Phasing Test Plan) did not identify the G- switch sensor as having a critical alignment and, hence was not included in that plan."
+      }
+    ]
+  }
+}
