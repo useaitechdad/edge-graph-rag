@@ -7,8 +7,9 @@ The corpus is a set of public-domain NASA mishap investigation reports. The ques
 asking about them cross documents — a contractor named in one report, a failure described in
 another — which is exactly where a single vector lookup tends to stay inside one report.
 
-**Status: M0.** Scaffold only: schema, one health route, the eval format and its validator.
-There is no retrieval code yet, and that is deliberate — see M1.
+**Status: M1.** The eval set is frozen: 24 questions in `eval/questions.json`, how they are
+scored in `eval/DESIGN.md`, and a per-question prediction in `eval/questions.notes.md`. There is
+still no retrieval code; that starts at M2, after this commit.
 
 ## Milestones
 

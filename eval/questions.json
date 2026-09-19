@@ -1,0 +1,488 @@
+[
+  {
+    "id": "q01",
+    "kind": "single-hop",
+    "question": "In the Mars Climate Orbiter loss, by what factor did the navigation software underestimate the effect of the thruster firings on the spacecraft's trajectory, and why?",
+    "answer": "By a factor of 4.45 - the conversion factor from pounds force to newtons - because the impulse data in the AMD file was in English units instead of the specified metric units.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 16,
+        "role": "answer",
+        "quote": "Subsequent processing of the data from AMD file by the navigation software algorithm therefore, underestimated the effect on the spacecraft trajectory by a factor of 4.45, which is the required conversion factor from force in pounds to Newtons. An erroneous trajectory was computed using this incorrect data."
+      }
+    ]
+  },
+  {
+    "id": "q02",
+    "kind": "single-hop",
+    "question": "Once the small-forces velocity changes were corrected after the fact, what initial periapsis altitude did the navigation estimates give for Mars Climate Orbiter?",
+    "answer": "About 57 km, judged too low for the spacecraft to survive.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 14,
+        "role": "answer",
+        "quote": "Finally, after the fact navigation estimates, using all available data through loss of signal, with corrected values for the small forces ∆V’s, indicated an initial periapsis (lowest point of orbit) of 57 km which was judged too low for spacecraft survival."
+      }
+    ]
+  },
+  {
+    "id": "q03",
+    "kind": "single-hop",
+    "question": "What did the JPL review board identify as the most probable cause of the premature shutdown of Mars Polar Lander's descent engines?",
+    "answer": "A spurious touchdown indication generated in the Hall Effect touchdown sensors during landing-leg deployment, which the flight software accepted as a genuine touchdown event.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 43,
+        "role": "answer",
+        "quote": "a spurious touchdown indication occurs in the Hall Effect touchdown sensor during landing leg deployment (while the lander is connected to the parachute). The software logic accepts this transient signal as a valid touchdown event if it persists for two consecutive readings of the sensor."
+      }
+    ]
+  },
+  {
+    "id": "q04",
+    "kind": "single-hop",
+    "question": "At what velocity were the Deep Space 2 microprobes expected to hit the surface of Mars, and what shock loads were their two sections designed to survive?",
+    "answer": "About 200 metres per second; the aft-body was designed for about 60,000 g and the penetrator for about 30,000 g.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 20,
+        "role": "answer",
+        "quote": "The probes were expected to strike the surthce with an impact velocity of about 200 meters per second. The aft-body was designed to withstand a peak rigid body shock of about 60,000 g's: the penetrator, a shock of about 30,000 g's."
+      }
+    ]
+  },
+  {
+    "id": "q05",
+    "kind": "single-hop",
+    "question": "What did the Genesis board determine was the proximate cause of the sample return capsule's parachute failure?",
+    "answer": "The G-switch sensors were mounted in the wrong orientation on the SRC-AU relay cards, so they could not sense atmospheric entry and never activated the event sequence timer.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 39,
+        "role": "answer",
+        "quote": "The Board determined the Genesis mishap proximate cause to be that the G-switch sensors did not activate the EST due to the improper orientation on the relay cards of SRC-AU boxes. In the wrong orientation, it was impossible for the sensors to detect atmospheric entry and initiate the EST"
+      }
+    ]
+  },
+  {
+    "id": "q06",
+    "kind": "single-hop",
+    "question": "What did the CONTOUR board conclude was the probable proximate cause of the spacecraft's loss?",
+    "answer": "Overheating of the forward end of the spacecraft caused by base heating from the solid rocket motor exhaust plume.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "contour-mib",
+        "page": 18,
+        "role": "answer",
+        "quote": "The CONTOUR Board concludes that the probable proximate cause for loss of the CONTOUR spacecraft was overheating of the forward-end of the spacecraft due to base heating from the SRM exhaust plume."
+      }
+    ]
+  },
+  {
+    "id": "q07",
+    "kind": "single-hop",
+    "question": "Why did the NOAA N-PRIME satellite fall to the floor during the turn-over operation?",
+    "answer": "The turn-over cart adapter plate had not been secured to the cart - the required 24 bolts were not installed - and the satellite slipped off at 13 degrees of tilt.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 27,
+        "role": "answer",
+        "quote": "The spacecraft fell to the floor as it reached 13 degrees of tilt while being rotated. The reason was clear from inspection of the hardware: the satellite fell because the TOC adapter plate was not secured to the TOC with the required 24 bolts (see Figure 3-3)."
+      }
+    ]
+  },
+  {
+    "id": "q08",
+    "kind": "single-hop",
+    "question": "What does the Mars Climate Orbiter board call the culture change it recommends in its report on project management in NASA?",
+    "answer": "\"Mission Success First\" - making mission success the highest priority at every level of the project and the institutional organisation.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mco-mib-project-management",
+        "page": 7,
+        "role": "answer",
+        "quote": "This vision, Mission Success First, entails a new NASA culture and new methods of managing projects. To proceed with this culture shift, mission success must become the highest priority at all levels of the program/project and the institutional organization."
+      }
+    ]
+  },
+  {
+    "id": "q09",
+    "kind": "single-hop",
+    "question": "How badly underfunded did the Mars Program Independent Assessment Team judge the Mars '98 project to have been?",
+    "answer": "By at least 30 percent, once efficiencies from shared development and operations are taken into account.",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "mars-program-independent-assessment",
+        "page": 25,
+        "role": "answer",
+        "quote": "In effect, the Mars '98 project attempted to deliver two spacecraft for the price of a Pathfinder. If efficiencies from shared development and operations are factored in, it appears that the Mars '98 project was underfunded by at least 30 percent."
+      }
+    ]
+  },
+  {
+    "id": "q10",
+    "kind": "single-hop",
+    "question": "How fast was the Genesis sample return capsule travelling when it hit the ground?",
+    "answer": "193 mph (311 kph).",
+    "hops": null,
+    "gold": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 42,
+        "role": "answer",
+        "quote": "Since the drogue pyrotechnic firing did not occur, the SRC continued its descent at a high rate of speed, lost stability, and struck the desert floor at 193 mph (311 kph)."
+      }
+    ]
+  },
+  {
+    "id": "q11",
+    "kind": "multi-hop",
+    "question": "The prime contractor that developed both Mars Surveyor '98 spacecraft from its Denver plant was also the industrial partner on a later sample-return mission whose capsule crashed. What deceleration was that capsule's avionics required to detect before the parachute release sequence could start?",
+    "answer": "A 3.0 g plus or minus 10% descending X axial deceleration.",
+    "hops": "Mars Surveyor '98 -> prime contractor Lockheed Martin Astronautics, Denver -> Lockheed Martin Space Systems, Denver built the Genesis spacecraft and sample return capsule -> SRC avionics requirement 3.2.1.4.2.2",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 9,
+        "role": "bridge",
+        "quote": "The MSP '98 Development Project used a prime contract vehicle to support project implementation. Lockheed Martin Astronautics (LMA) of Denver, Colorado was selected as the prime contractor. LMA's contracted development responsibilities were to design and develop both spacecraft, lead flight system integration and test, and support launch operations."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 216,
+        "role": "bridge",
+        "quote": "NASA’s Jet Propulsion Laboratory (JPL) in Pasadena, Calif., manages the Genesis mission for NASA’s Science Mission Directorate, Washington. Lockheed Martin Space Systems, Denver, developed and operated the spacecraft."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 169,
+        "role": "answer",
+        "quote": "The requirement from “SRC Avionics Subsystem Requirements Document GN-55200-200, Rev A” reads, “3.2.1.4.2.2 Drogue Parachute Release Trigger - The SRC avionics event sequence timer shall initiate the parachute release trigger timer upon detec­ tion of a 3.0 g ± 10% descending X axial deceleration.”"
+      }
+    ]
+  },
+  {
+    "id": "q12",
+    "kind": "multi-hop",
+    "question": "What did the mishap board conclude was the proximate cause of the loss of the sample-return capsule built by the same contractor that developed the two Mars Surveyor '98 spacecraft?",
+    "answer": "The G-switch sensors were mounted in the wrong orientation on the SRC-AU relay cards, so they could not sense atmospheric entry and never activated the event sequence timer that would have fired the pyrotechnics.",
+    "hops": "Mars Surveyor '98 -> prime contractor Lockheed Martin Astronautics, Denver -> Lockheed Martin Space Systems, Denver built the Genesis spacecraft and sample return capsule -> Genesis proximate cause",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 9,
+        "role": "bridge",
+        "quote": "The MSP '98 Development Project used a prime contract vehicle to support project implementation. Lockheed Martin Astronautics (LMA) of Denver, Colorado was selected as the prime contractor. LMA's contracted development responsibilities were to design and develop both spacecraft, lead flight system integration and test, and support launch operations."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 216,
+        "role": "bridge",
+        "quote": "NASA’s Jet Propulsion Laboratory (JPL) in Pasadena, Calif., manages the Genesis mission for NASA’s Science Mission Directorate, Washington. Lockheed Martin Space Systems, Denver, developed and operated the spacecraft."
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 39,
+        "role": "answer",
+        "quote": "The Board determined the Genesis mishap proximate cause to be that the G-switch sensors did not activate the EST due to the improper orientation on the relay cards of SRC-AU boxes. In the wrong orientation, it was impossible for the sensors to detect atmospheric entry and initiate the EST"
+      }
+    ]
+  },
+  {
+    "id": "q13",
+    "kind": "multi-hop",
+    "question": "One mishap board quoted an earlier investigation's judgement that leaving out critical-event telemetry had been \"a defensible project decision, but an indefensible programmatic one\". In the report where that line originated, which phase of the mission was the missing telemetry for?",
+    "answer": "Entry, descent and landing (EDL) telemetry.",
+    "hops": "CONTOUR board's paraphrased quote -> attributed to the Mars Polar Lander failure investigation -> MPL finding 4 concerns EDL telemetry",
+    "gold": [
+      {
+        "doc": "contour-mib",
+        "page": 24,
+        "role": "bridge",
+        "quote": "The following paraphrased quote is from the Mars Polar Lander failure investigation, “The decision not to have critical event telemetry was a defensible project decision, but an indefensible programmatic one.” Some NASA projects have continued to neglect this lesson; however, engineering telemetry during critical events is a must."
+      },
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 22,
+        "role": "answer",
+        "quote": "4. The decision not to have EDL telemetry' was a defensible proiect decision, but an indefensible programmatic one. (See Section 5. I. 1.)"
+      }
+    ]
+  },
+  {
+    "id": "q14",
+    "kind": "multi-hop",
+    "question": "The comet mission's board quoted an earlier investigation's judgement about critical-event telemetry as a lesson NASA had failed to learn. What did that earlier investigation give as the probable cause of its own mission's loss?",
+    "answer": "Premature shutdown of the descent engines, caused by the flight software's vulnerability to transient signals.",
+    "hops": "CONTOUR board's paraphrased quote -> attributed to the Mars Polar Lander failure investigation -> MPL probable cause",
+    "gold": [
+      {
+        "doc": "contour-mib",
+        "page": 24,
+        "role": "bridge",
+        "quote": "The following paraphrased quote is from the Mars Polar Lander failure investigation, “The decision not to have critical event telemetry was a defensible project decision, but an indefensible programmatic one.” Some NASA projects have continued to neglect this lesson; however, engineering telemetry during critical events is a must."
+      },
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 13,
+        "role": "answer",
+        "quote": "the probable cause of the loss of MPL has been traced to premature shutdo_ n of the descent engines, resulting from a vulnerability of the software to transient signals."
+      }
+    ]
+  },
+  {
+    "id": "q15",
+    "kind": "multi-hop",
+    "question": "One of the consultants to the Mars Climate Orbiter mishap board came from the laboratory that went on to design, build and operate a comet mission that was lost. What worst-case plume heating environment did that laboratory's own analysis assume for the mission?",
+    "answer": "A combined radiative-convective environment of 50 suns (1 sun = 1358 W/m2), which independent analyses commissioned by the board found to be an under-prediction.",
+    "hops": "MCO MIB consultant Peter Sharer -> Johns Hopkins University Applied Physics Laboratory -> APL designed, built and operated CONTOUR -> APL plume heating analysis assumed 50 suns",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 4,
+        "role": "bridge",
+        "quote": "Peter Sharer Senior Professional Staff Mission Concepts and Analysis Group The Johns Hopkins University Applied Physics Laboratory Craig Staresinich Chandra X-ray Observatory Program Manager TRW"
+      },
+      {
+        "doc": "contour-mib",
+        "page": 8,
+        "role": "bridge",
+        "quote": "NASA sponsored CONTOUR with Dr. Joseph Veverka of Cornell University as the principal investigator; it was designed, built, and operated by Johns Hopkins University’s Applied Physics Laboratory with specialized support by NASA."
+      },
+      {
+        "doc": "contour-mib",
+        "page": 19,
+        "role": "answer",
+        "quote": "The APL CONTOUR plume heating analysis3 assumed a worst-case com- bined radiative-convective plume heating environment of 50 suns (1 sun = 1358 W/m2). The MIB commissioned multiple independent plume analysis efforts4,5,6,7 which indicated the heating was higher than APL had predicted."
+      }
+    ]
+  },
+  {
+    "id": "q16",
+    "kind": "multi-hop",
+    "question": "What root causes did the mishap board identify for the loss of the comet mission designed and built by the laboratory that supplied a consultant to the Mars Climate Orbiter mishap board?",
+    "answer": "Three: the project's reliance on analysis by similarity, an inadequate systems engineering process, and an inadequate review function.",
+    "hops": "MCO MIB consultant Peter Sharer -> Johns Hopkins University Applied Physics Laboratory -> APL designed, built and operated CONTOUR -> CONTOUR root causes",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 4,
+        "role": "bridge",
+        "quote": "Peter Sharer Senior Professional Staff Mission Concepts and Analysis Group The Johns Hopkins University Applied Physics Laboratory Craig Staresinich Chandra X-ray Observatory Program Manager TRW"
+      },
+      {
+        "doc": "contour-mib",
+        "page": 8,
+        "role": "bridge",
+        "quote": "NASA sponsored CONTOUR with Dr. Joseph Veverka of Cornell University as the principal investigator; it was designed, built, and operated by Johns Hopkins University’s Applied Physics Laboratory with specialized support by NASA."
+      },
+      {
+        "doc": "contour-mib",
+        "page": 9,
+        "role": "answer",
+        "quote": "Root Causes (Apply to one or more of the possible proximate causes.) • CONTOUR Project reliance on analysis by similarity • Inadequate systems engineering process • Inadequate review function"
+      }
+    ]
+  },
+  {
+    "id": "q17",
+    "kind": "multi-hop",
+    "question": "The prime contractor that built both Mars Surveyor '98 spacecraft in Colorado belongs to a corporation that also runs a satellite integration and test plant in California. Which two satellite programmes were consolidated into that plant in 1998, and where did they move from?",
+    "answer": "The TIROS and DMSP programmes, relocated from East Windsor, New Jersey to Sunnyvale, California.",
+    "hops": "Mars Surveyor '98 prime contractor Lockheed Martin Astronautics, Denver -> Lockheed Martin Space Systems Company, Sunnyvale -> TIROS and DMSP moved there from East Windsor, New Jersey in 1998",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 9,
+        "role": "bridge",
+        "quote": "Lockheed Martin Astronautics (LMA) of Denver, Colorado was selected as the prime contractor. LMA's contracted development responsibilities were to design and develop both spacecraft, lead flight system integration and test, and support launch operations. JPL retained responsibilities for overall project management"
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 27,
+        "role": "bridge",
+        "quote": "On Saturday, September 6, 2003 during an operation at Lockheed Martin Space Systems Company (LMSSC) Sunnyvale that required repositioning the Television Infrared Observational Satellites (TIROS) National Oceanic and Atmospheric Administration (NOAA) N-Prime satellite from a vertical to a horizontal position, the satellite slipped from the Turn-Over Cart (TOC) and fell to the floor"
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 34,
+        "role": "answer",
+        "quote": "Both of Lockheed’s TIROS and DMSP Programs were relocated from East Windsor, New Jersey to Sunnyvale, California in 1998 as part of a planned consolidation of LMSSC Satellite integration and test (I&T) operations. Collocating TIROS and DMSP I&T operations with other satellite I&T operations to the LMSSC Sunnyvale facility was intended to create some efficiency"
+      }
+    ]
+  },
+  {
+    "id": "q18",
+    "kind": "multi-hop",
+    "question": "The contractor that built both Mars Surveyor '98 spacecraft in Colorado belongs to a corporation whose California satellite plant was the site of another mishap in this collection. Who chaired the NASA board that investigated that mishap, and what post did he hold?",
+    "answer": "Christopher Scolese, Deputy Associate Administrator for Space Science at NASA Headquarters.",
+    "hops": "Mars Surveyor '98 prime contractor Lockheed Martin Astronautics, Denver -> Lockheed Martin Space Systems Company, Sunnyvale -> NOAA N-PRIME Mishap Investigation Board chairman",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 9,
+        "role": "bridge",
+        "quote": "Lockheed Martin Astronautics (LMA) of Denver, Colorado was selected as the prime contractor. LMA's contracted development responsibilities were to design and develop both spacecraft, lead flight system integration and test, and support launch operations. JPL retained responsibilities for overall project management"
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 27,
+        "role": "bridge",
+        "quote": "On Saturday, September 6, 2003 during an operation at Lockheed Martin Space Systems Company (LMSSC) Sunnyvale that required repositioning the Television Infrared Observational Satellites (TIROS) National Oceanic and Atmospheric Administration (NOAA) N-Prime satellite from a vertical to a horizontal position, the satellite slipped from the Turn-Over Cart (TOC) and fell to the floor"
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 24,
+        "role": "answer",
+        "quote": "Christopher Scolese Deputy Associate Administrator for Space Science, NASA Headquarters Chairman Richard A. Foss Chief, Systems Integration and Test Branch Langley Research Center, NASA"
+      }
+    ]
+  },
+  {
+    "id": "q19",
+    "kind": "multi-hop",
+    "question": "The Genesis board's human factors appendix works backwards from design error to organisational influences, crediting a 1990 source for the idea. Another board in this collection built its whole mishap analysis on that same author's concept - what is the classification system that board used called?",
+    "answer": "The Human Factors Analysis and Classification System (HFACS), built on James Reason's Swiss Cheese model of latent and active failures.",
+    "hops": "Genesis Appendix D-9 cites Reason, 1990 -> James Reason's latent/active failure concept -> NOAA N-PRIME board used HFACS, which is built on it",
+    "gold": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 126,
+        "role": "bridge",
+        "quote": "The goal of the analysis was not to blame individuals but to systematically examine a range of issues, beginning with various types of “design error” and working backwards in time to preconditions, management operations, and organizational influences (Reason, 1990; see Shappell and Wiegmann (2001) for an alternative characterization)."
+      },
+      {
+        "doc": "noaa-n-prime-mishap",
+        "page": 77,
+        "role": "answer",
+        "quote": "HFACS provides a comprehensive framework for identifying and analyzing human error. Further, it provides a method to categorize the findings or deficiencies and to formulate intervention strategies. HFACS is built upon James Reason’s (1990) concept of latent and active failures or the so-called ‘Swiss Cheese” model."
+      }
+    ]
+  },
+  {
+    "id": "q20",
+    "kind": "multi-hop",
+    "question": "Mars Polar Lander's inertial measurement unit had flight heritage from two earlier missions. A later sample-return capsule reused one of those missions' drawings in place of a planned test - which test was dropped, and who performed the inspection that replaced it?",
+    "answer": "The centrifuge test was deleted in favour of verification by inspection against Stardust drawings, and the inspection was done by the SRC-AU Product Integrity Engineer, an electrical engineer without the necessary mechanical experience.",
+    "hops": "MPL MIMU heritage includes MCO and Stardust -> Stardust -> Genesis SRC-AU requirement wording taken verbatim from the Stardust SRC AU Requirements Document -> centrifuge test deleted in favour of inspection against Stardust drawings by the SRC-AU PIE",
+    "gold": [
+      {
+        "doc": "mars-polar-lander-ds2-loss",
+        "page": 121,
+        "role": "bridge",
+        "quote": "The MIMU t,nit is comnlonly used on aircraft and has some spaceflight heritage, including MCO and Stardust. Its operation was flawless during the lander cruise phase as well as on the MCO and Stardust missions. Each IMU uses approximately 25 watts"
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 169,
+        "role": "bridge",
+        "quote": "Of particular importance are the words, “descending X axial deceleration,” which were taken verbatim from requirement 3.2.3.1 of “Stardust SRC AU Requirements Document, 905C5100016, Rev 0.”"
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 164,
+        "role": "answer",
+        "quote": "it was decided to delete the centrifuge test in favor of verification by inspection against Stardust drawings. This approach could have been successful if it had been performed by an experi­ enced Mechanical Engineer or guidance, navigation, and control; however, the drawing inspection was performed by the SRC-AU PIE, an Electrical Engineer"
+      }
+    ]
+  },
+  {
+    "id": "q21",
+    "kind": "multi-hop",
+    "question": "The Genesis board listed four earlier Science Mission Directorate failures it traced to the same weakness in NASA's systems engineering process. For the one of those that was lost during a solid rocket motor burn with no telemetry coverage, what alternatives did its own board say the project had failed to consider?",
+    "answer": "Airborne P-3 assets, United States Air Force facilities in the region (Diego Garcia), or other possible assets.",
+    "hops": "Genesis Recommendation 1 discussion names MCO, MPL, TIMED and CONTOUR -> CONTOUR was lost during the SRM burn without telemetry -> CONTOUR board's list of unconsidered telemetry assets",
+    "gold": [
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 58,
+        "role": "bridge",
+        "quote": "The Genesis mishap occurred mainly because of failures in NASA’s Systems Engi­ neering process. This issue is recognized within the Science Mission Director­ ate community and is known to be a cause of several of the Directorate’s recent failures (MCO, MPL, TIMED, and CONTOUR)."
+      },
+      {
+        "doc": "contour-mib",
+        "page": 24,
+        "role": "answer",
+        "quote": "The Board remains unconvinced that the CONTOUR Project lacked viable options for telemetry coverage during the SRM burn. It was apparent that the CONTOUR Project did not consider the use of airborne P-3 assets, United States Air Force facilities in the region (Diego Garcia), or other pos- sible assets."
+      }
+    ]
+  },
+  {
+    "id": "q22",
+    "kind": "multi-hop",
+    "question": "An independent assessment team records only that the prime contractor supplied navigation data in English units rather than the specified metric units. In the mishap board's own report, which named ground software application produced that data, and what units should its output have been in?",
+    "answer": "SM_FORCES (the \"Small Forces\" application); its output should have been in metric units of newton-seconds, but it reported pound-seconds.",
+    "hops": "MPIAT statement that Lockheed Martin supplied data in English units -> the Mars Climate Orbiter navigation units error -> MCO MIB root cause names SM_FORCES and the Newton-second requirement",
+    "gold": [
+      {
+        "doc": "mars-program-independent-assessment",
+        "page": 19,
+        "role": "bridge",
+        "quote": "Spacecraft operatingdataneededfor navigationwereprovidedto thenavigationteambyprime contractorLockheed Martin in English units rather than the specified metric units. In developing complex space systems, errors are inevitable."
+      },
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 16,
+        "role": "answer",
+        "quote": "Specifically, thruster performance data in English units instead of metric units was used in the software application code titled SM_FORCES (small forces). The output from the SM_FORCES application code as required by a MSOP Project Software Interface Specification (SIS) was to be in metric units of Newton- seconds (N-s). Instead, the data was reported in English units of pound-seconds (lbf-s)."
+      }
+    ]
+  },
+  {
+    "id": "q23",
+    "kind": "multi-hop",
+    "question": "The Goddard guidance, navigation and control chief who signed the Mars Climate Orbiter board's report later sat on another NASA mishap board as a systems engineering member. Who chaired that later board, and from which NASA centre?",
+    "answer": "Dr. Michael Ryschkewitsch, Director of the Applied Engineering & Technology Directorate at NASA Goddard Space Flight Center.",
+    "hops": "MCO MIB signatory Frank H. Bauer, Chief, Guidance, Navigation and Control, GSFC -> Frank Bauer, Systems Engineering, on the Genesis MIB -> Genesis MIB chairman Dr. Michael Ryschkewitsch",
+    "gold": [
+      {
+        "doc": "mars-climate-orbiter-mib-phase-i",
+        "page": 3,
+        "role": "bridge",
+        "quote": "Frank H. Bauer David Folta Chief, Guidance, Navigation and Control System Engineer, Guidance, Center Navigation and Control Center Goddard Space Flight Center Goddard Space Flight Center"
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 11,
+        "role": "answer",
+        "quote": "Dr. Michael Ryschkewitsch, Chairman Director, Applied Engineering & Technology Directorate NASA Goddard Space Flight Center, Greenbelt, MD Peter Spidaliere Executive Secretary NASA Johnson Space Flight Center, Houston, TX Patrick Martin Ex-Officio Office of Safety and Mission Assurance NASA Headquarters, Washington, DC Frank Bauer Systems Engineering NASA Goddard Space Flight Center, Greenbelt, MD"
+      }
+    ]
+  },
+  {
+    "id": "q24",
+    "kind": "multi-hop",
+    "question": "The Mars Climate Orbiter board's report on project management quotes a motto used by its model project teams that ends \"Test like you fly.\" A later mishap board made the failure to do that one of its named root-cause categories. What root cause did it list under that heading?",
+    "answer": "Root Cause 5.1 - the G-switch sensor was not identified as having a critical alignment in the Pointing and Alignment Document (Phasing Test Plan).",
+    "hops": "MCO MIB project-management report motto ends \"Test like you fly\" -> Genesis Root Cause Category No. 5, Failure to \"Test as You Fly\" -> Root Cause 5.1 on the Pointing and Alignment Document",
+    "gold": [
+      {
+        "doc": "mco-mib-project-management",
+        "page": 30,
+        "role": "bridge",
+        "quote": "Their philosophy is, “Test, test and test some more.” Their motto is: “Know what you build. Test what you build. Test what you fly. Test like you fly.” Whether developing onboard spacecraft components or ground support components, these teams take particular care to identify mission-critical components"
+      },
+      {
+        "doc": "genesis-mib-vol-i",
+        "page": 55,
+        "role": "answer",
+        "quote": "Root Cause Category No. 5: Failure to “Test as You Fly” Root Cause 5.1: G-switch sensor not identified as having a critical alignment in the Pointing and Alignment Document (Phasing Test Plan). Facts: • The Pointing Budget and Alignment Criteria Document (Phasing Test Plan) did not identify the G-switch sensor as having a critical alignment."
+      }
+    ]
+  }
+]
