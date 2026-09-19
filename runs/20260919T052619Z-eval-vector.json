@@ -1,0 +1,872 @@
+{
+	"milestone": "M2",
+	"retriever": "vector",
+	"base_url": "http://127.0.0.1:8787",
+	"k": 10,
+	"secondary_k": 5,
+	"started_utc": "2026-09-19T05:26:13+00:00",
+	"wall_seconds": 6.4,
+	"metric": "answer-passage recall at k; a chunk contains a passage when it holds at least half of the quote's characters, whitespace-normalised and contiguous (eval/DESIGN.md, implemented in eval/scoring.py)",
+	"amendment": 1,
+	"scoring_rules": {
+		"strict": "the rule as frozen: only the question's own gold answer passage counts",
+		"amended": "the gold answer passage or any passage in eval/equivalents.json"
+	},
+	"equivalents_used": 32,
+	"totals": {
+		"strict": {
+			"single": {
+				"questions": 10,
+				"found_at_5": 5,
+				"found_at_10": 7
+			},
+			"multi-specific": {
+				"questions": 9,
+				"found_at_5": 3,
+				"found_at_10": 3
+			},
+			"multi-generic": {
+				"questions": 5,
+				"found_at_5": 2,
+				"found_at_10": 2
+			},
+			"overall": {
+				"questions": 24,
+				"found_at_5": 10,
+				"found_at_10": 12
+			}
+		},
+		"amended": {
+			"single": {
+				"questions": 10,
+				"found_at_5": 6,
+				"found_at_10": 7
+			},
+			"multi-specific": {
+				"questions": 9,
+				"found_at_5": 4,
+				"found_at_10": 4
+			},
+			"multi-generic": {
+				"questions": 5,
+				"found_at_5": 3,
+				"found_at_10": 3
+			},
+			"overall": {
+				"questions": 24,
+				"found_at_5": 13,
+				"found_at_10": 14
+			}
+		}
+	},
+	"questions": [
+		{
+			"id": "q01",
+			"kind": "single-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 2,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0029",
+				"mars-polar-lander-ds2-loss:0131",
+				"mars-polar-lander-ds2-loss:0290",
+				"mars-climate-orbiter-mib-phase-i:0028",
+				"mars-climate-orbiter-mib-phase-i:0030",
+				"mars-polar-lander-ds2-loss:0098",
+				"mco-mib-project-management:0035",
+				"mars-polar-lander-ds2-loss:0056",
+				"mars-climate-orbiter-mib-phase-i:0006",
+				"mars-climate-orbiter-mib-phase-i:0017"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q02",
+			"kind": "single-hop",
+			"rank": 1,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 1,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0020",
+				"mars-polar-lander-ds2-loss:0131",
+				"mars-climate-orbiter-mib-phase-i:0017",
+				"mars-climate-orbiter-mib-phase-i:0029",
+				"mars-climate-orbiter-mib-phase-i:0019",
+				"mars-climate-orbiter-mib-phase-i:0030",
+				"mars-polar-lander-ds2-loss:0126",
+				"mars-climate-orbiter-mib-phase-i:0018",
+				"mars-polar-lander-ds2-loss:0128",
+				"mars-climate-orbiter-mib-phase-i:0006"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q03",
+			"kind": "single-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 2,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment"
+			],
+			"chunk_ids": [
+				"mars-polar-lander-ds2-loss:0027",
+				"mars-polar-lander-ds2-loss:0034",
+				"mars-polar-lander-ds2-loss:0290",
+				"mars-polar-lander-ds2-loss:0033",
+				"mars-program-independent-assessment:0019",
+				"mars-polar-lander-ds2-loss:0084",
+				"mars-polar-lander-ds2-loss:0113",
+				"mars-polar-lander-ds2-loss:0185",
+				"mars-polar-lander-ds2-loss:0029",
+				"mars-climate-orbiter-mib-phase-i:0003"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q04",
+			"kind": "single-hop",
+			"rank": 9,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": true,
+			"strict_rank": 9,
+			"strict_found_at_5": false,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0014",
+				"mars-polar-lander-ds2-loss:0398",
+				"mars-polar-lander-ds2-loss:0447",
+				"mars-polar-lander-ds2-loss:0434",
+				"mars-polar-lander-ds2-loss:0141",
+				"mars-polar-lander-ds2-loss:0396",
+				"mars-polar-lander-ds2-loss:0044",
+				"mars-polar-lander-ds2-loss:0395",
+				"mars-polar-lander-ds2-loss:0043",
+				"mars-polar-lander-ds2-loss:0102"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q05",
+			"kind": "single-hop",
+			"rank": 1,
+			"hit_on": "equivalent",
+			"equivalents": 4,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 7,
+			"strict_found_at_5": false,
+			"strict_found_at_10": true,
+			"equivalent_rank": 1,
+			"hits_returned": 10,
+			"documents_returned": [
+				"genesis-mib-vol-i",
+				"mars-polar-lander-ds2-loss"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0014",
+				"genesis-mib-vol-i:0013",
+				"genesis-mib-vol-i:0322",
+				"genesis-mib-vol-i:0243",
+				"genesis-mib-vol-i:0049",
+				"genesis-mib-vol-i:0323",
+				"genesis-mib-vol-i:0050",
+				"genesis-mib-vol-i:0060",
+				"genesis-mib-vol-i:0130",
+				"mars-polar-lander-ds2-loss:0027"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q06",
+			"kind": "single-hop",
+			"rank": 2,
+			"hit_on": "gold",
+			"equivalents": 1,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 2,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": 5,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mars-polar-lander-ds2-loss"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0014",
+				"contour-mib:0023",
+				"contour-mib:0024",
+				"mars-polar-lander-ds2-loss:0027",
+				"contour-mib:0009",
+				"mars-polar-lander-ds2-loss:0028",
+				"contour-mib:0007",
+				"contour-mib:0044",
+				"contour-mib:0018",
+				"contour-mib:0021"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q07",
+			"kind": "single-hop",
+			"rank": 1,
+			"hit_on": "gold",
+			"equivalents": 3,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 1,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": 2,
+			"hits_returned": 10,
+			"documents_returned": [
+				"noaa-n-prime-mishap"
+			],
+			"chunk_ids": [
+				"noaa-n-prime-mishap:0003",
+				"noaa-n-prime-mishap:0005",
+				"noaa-n-prime-mishap:0033",
+				"noaa-n-prime-mishap:0002",
+				"noaa-n-prime-mishap:0077",
+				"noaa-n-prime-mishap:0004",
+				"noaa-n-prime-mishap:0078",
+				"noaa-n-prime-mishap:0030",
+				"noaa-n-prime-mishap:0089",
+				"noaa-n-prime-mishap:0067"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q08",
+			"kind": "single-hop",
+			"rank": 2,
+			"hit_on": "gold",
+			"equivalents": 5,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 2,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": 6,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-program-independent-assessment",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mco-mib-project-management:0000",
+				"mco-mib-project-management:0006",
+				"mco-mib-project-management:0023",
+				"mco-mib-project-management:0017",
+				"mco-mib-project-management:0003",
+				"mco-mib-project-management:0024",
+				"mco-mib-project-management:0025",
+				"mars-program-independent-assessment:0000",
+				"mco-mib-project-management:0042",
+				"mco-mib-project-management:0075"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q09",
+			"kind": "single-hop",
+			"rank": 1,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 1,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment"
+			],
+			"chunk_ids": [
+				"mars-program-independent-assessment:0021",
+				"mars-program-independent-assessment:0020",
+				"mars-program-independent-assessment:0000",
+				"mars-polar-lander-ds2-loss:0047",
+				"mars-program-independent-assessment:0043",
+				"mars-polar-lander-ds2-loss:0030",
+				"mars-program-independent-assessment:0046",
+				"mars-program-independent-assessment:0041",
+				"mars-program-independent-assessment:0052",
+				"mars-polar-lander-ds2-loss:0027"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q10",
+			"kind": "single-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"genesis-mib-vol-i",
+				"mars-polar-lander-ds2-loss"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0013",
+				"genesis-mib-vol-i:0322",
+				"mars-polar-lander-ds2-loss:0102",
+				"mars-polar-lander-ds2-loss:0367",
+				"genesis-mib-vol-i:0120",
+				"genesis-mib-vol-i:0040",
+				"genesis-mib-vol-i:0176",
+				"genesis-mib-vol-i:0317",
+				"mars-polar-lander-ds2-loss:0131",
+				"mars-polar-lander-ds2-loss:0396"
+			],
+			"bridge_ranks": {}
+		},
+		{
+			"id": "q11",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0013",
+				"mars-climate-orbiter-mib-phase-i:0010",
+				"mars-polar-lander-ds2-loss:0066",
+				"genesis-mib-vol-i:0014",
+				"mars-program-independent-assessment:0023",
+				"genesis-mib-vol-i:0040",
+				"mars-climate-orbiter-mib-phase-i:0071",
+				"mars-polar-lander-ds2-loss:0302",
+				"mars-polar-lander-ds2-loss:0318",
+				"genesis-mib-vol-i:0180"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:9": 2,
+				"genesis-mib-vol-i:216": null
+			}
+		},
+		{
+			"id": "q12",
+			"kind": "multi-hop",
+			"rank": 2,
+			"hit_on": "equivalent",
+			"equivalents": 4,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": 2,
+			"hits_returned": 10,
+			"documents_returned": [
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mco-mib-project-management:0005",
+				"genesis-mib-vol-i:0014",
+				"mars-polar-lander-ds2-loss:0027",
+				"mco-mib-project-management:0112",
+				"genesis-mib-vol-i:0012",
+				"mars-program-independent-assessment:0021",
+				"mars-climate-orbiter-mib-phase-i:0072",
+				"mars-program-independent-assessment:0020",
+				"mars-climate-orbiter-mib-phase-i:0071",
+				"mco-mib-project-management:0003"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:9": null,
+				"genesis-mib-vol-i:216": null
+			}
+		},
+		{
+			"id": "q13",
+			"kind": "multi-hop",
+			"rank": 2,
+			"hit_on": "equivalent",
+			"equivalents": 2,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": 2,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment",
+				"mco-mib-project-management",
+				"noaa-n-prime-mishap"
+			],
+			"chunk_ids": [
+				"contour-mib:0033",
+				"mars-polar-lander-ds2-loss:0068",
+				"noaa-n-prime-mishap:0082",
+				"noaa-n-prime-mishap:0085",
+				"mars-program-independent-assessment:0017",
+				"mars-polar-lander-ds2-loss:0028",
+				"contour-mib:0034",
+				"mars-polar-lander-ds2-loss:0027",
+				"mars-climate-orbiter-mib-phase-i:0004",
+				"mco-mib-project-management:0036"
+			],
+			"bridge_ranks": {
+				"contour-mib:24": 1
+			}
+		},
+		{
+			"id": "q14",
+			"kind": "multi-hop",
+			"rank": 2,
+			"hit_on": "gold",
+			"equivalents": 1,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 2,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"contour-mib:0033",
+				"mars-polar-lander-ds2-loss:0027",
+				"mars-polar-lander-ds2-loss:0028",
+				"genesis-mib-vol-i:0014",
+				"mars-polar-lander-ds2-loss:0034",
+				"mars-climate-orbiter-mib-phase-i:0073",
+				"mars-climate-orbiter-mib-phase-i:0071",
+				"mco-mib-project-management:0006",
+				"contour-mib:0007",
+				"mco-mib-project-management:0044"
+			],
+			"bridge_ranks": {
+				"contour-mib:24": 1
+			}
+		},
+		{
+			"id": "q15",
+			"kind": "multi-hop",
+			"rank": 1,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 1,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"mars-climate-orbiter-mib-phase-i",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"contour-mib:0025",
+				"mco-mib-project-management:0005",
+				"mco-mib-project-management:0003",
+				"mco-mib-project-management:0026",
+				"mars-climate-orbiter-mib-phase-i:0002",
+				"contour-mib:0040",
+				"contour-mib:0004",
+				"mco-mib-project-management:0111",
+				"mco-mib-project-management:0025",
+				"mars-climate-orbiter-mib-phase-i:0003"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:4": 5,
+				"contour-mib:8": null
+			}
+		},
+		{
+			"id": "q16",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mco-mib-project-management:0005",
+				"mco-mib-project-management:0003",
+				"mco-mib-project-management:0026",
+				"contour-mib:0004",
+				"genesis-mib-vol-i:0014",
+				"mars-climate-orbiter-mib-phase-i:0002",
+				"mars-polar-lander-ds2-loss:0027",
+				"genesis-mib-vol-i:0012",
+				"genesis-mib-vol-i:0041",
+				"mco-mib-project-management:0025"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:4": 6,
+				"contour-mib:8": null
+			}
+		},
+		{
+			"id": "q17",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0010",
+				"mco-mib-project-management:0015",
+				"mco-mib-project-management:0014",
+				"mco-mib-project-management:0111",
+				"mars-polar-lander-ds2-loss:0039",
+				"mars-program-independent-assessment:0021",
+				"mars-program-independent-assessment:0035",
+				"mars-program-independent-assessment:0044",
+				"mars-polar-lander-ds2-loss:0023",
+				"mars-climate-orbiter-mib-phase-i:0009"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:9": 1,
+				"noaa-n-prime-mishap:27": null
+			}
+		},
+		{
+			"id": "q18",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mco-mib-project-management:0005",
+				"mco-mib-project-management:0112",
+				"mars-climate-orbiter-mib-phase-i:0072",
+				"mco-mib-project-management:0129",
+				"mars-climate-orbiter-mib-phase-i:0071",
+				"mco-mib-project-management:0033",
+				"genesis-mib-vol-i:0012",
+				"mco-mib-project-management:0000",
+				"contour-mib:0004",
+				"mars-polar-lander-ds2-loss:0039"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:9": null,
+				"noaa-n-prime-mishap:27": null
+			}
+		},
+		{
+			"id": "q19",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 3,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"genesis-mib-vol-i"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0192",
+				"genesis-mib-vol-i:0199",
+				"genesis-mib-vol-i:0150",
+				"genesis-mib-vol-i:0191",
+				"genesis-mib-vol-i:0002",
+				"genesis-mib-vol-i:0193",
+				"genesis-mib-vol-i:0000",
+				"genesis-mib-vol-i:0300",
+				"genesis-mib-vol-i:0216",
+				"genesis-mib-vol-i:0049"
+			],
+			"bridge_ranks": {
+				"genesis-mib-vol-i:126": 1
+			}
+		},
+		{
+			"id": "q20",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 0,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"mars-program-independent-assessment",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mars-polar-lander-ds2-loss:0033",
+				"mars-polar-lander-ds2-loss:0367",
+				"mars-program-independent-assessment:0000",
+				"mars-polar-lander-ds2-loss:0000",
+				"mars-polar-lander-ds2-loss:0030",
+				"mars-climate-orbiter-mib-phase-i:0009",
+				"mco-mib-project-management:0016",
+				"mars-polar-lander-ds2-loss:0185",
+				"mars-polar-lander-ds2-loss:0062",
+				"mars-polar-lander-ds2-loss:0447"
+			],
+			"bridge_ranks": {
+				"mars-polar-lander-ds2-loss:121": null,
+				"genesis-mib-vol-i:169": null
+			}
+		},
+		{
+			"id": "q21",
+			"kind": "multi-hop",
+			"rank": 4,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 4,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0086",
+				"genesis-mib-vol-i:0065",
+				"genesis-mib-vol-i:0014",
+				"contour-mib:0033",
+				"genesis-mib-vol-i:0019",
+				"genesis-mib-vol-i:0095",
+				"mco-mib-project-management:0034",
+				"genesis-mib-vol-i:0243",
+				"genesis-mib-vol-i:0020",
+				"mco-mib-project-management:0005"
+			],
+			"bridge_ranks": {
+				"genesis-mib-vol-i:58": 1
+			}
+		},
+		{
+			"id": "q22",
+			"kind": "multi-hop",
+			"rank": 2,
+			"hit_on": "gold",
+			"equivalents": 0,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 2,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mars-polar-lander-ds2-loss",
+				"noaa-n-prime-mishap"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0027",
+				"mars-climate-orbiter-mib-phase-i:0024",
+				"mars-climate-orbiter-mib-phase-i:0044",
+				"mars-polar-lander-ds2-loss:0371",
+				"mars-polar-lander-ds2-loss:0379",
+				"mars-climate-orbiter-mib-phase-i:0008",
+				"mars-polar-lander-ds2-loss:0352",
+				"mars-polar-lander-ds2-loss:0189",
+				"noaa-n-prime-mishap:0175",
+				"mars-climate-orbiter-mib-phase-i:0038"
+			],
+			"bridge_ranks": {
+				"mars-program-independent-assessment:19": null
+			}
+		},
+		{
+			"id": "q23",
+			"kind": "multi-hop",
+			"rank": 1,
+			"hit_on": "equivalent",
+			"equivalents": 2,
+			"found_at_5": true,
+			"found_at_10": true,
+			"strict_rank": 2,
+			"strict_found_at_5": true,
+			"strict_found_at_10": true,
+			"equivalent_rank": 1,
+			"hits_returned": 10,
+			"documents_returned": [
+				"contour-mib",
+				"genesis-mib-vol-i",
+				"mars-climate-orbiter-mib-phase-i",
+				"mco-mib-project-management",
+				"noaa-n-prime-mishap"
+			],
+			"chunk_ids": [
+				"genesis-mib-vol-i:0312",
+				"genesis-mib-vol-i:0004",
+				"mars-climate-orbiter-mib-phase-i:0002",
+				"noaa-n-prime-mishap:0001",
+				"contour-mib:0048",
+				"mars-climate-orbiter-mib-phase-i:0001",
+				"contour-mib:0004",
+				"genesis-mib-vol-i:0005",
+				"mco-mib-project-management:0121",
+				"mco-mib-project-management:0002"
+			],
+			"bridge_ranks": {
+				"mars-climate-orbiter-mib-phase-i:3": 6
+			}
+		},
+		{
+			"id": "q24",
+			"kind": "multi-hop",
+			"rank": null,
+			"hit_on": null,
+			"equivalents": 3,
+			"found_at_5": false,
+			"found_at_10": false,
+			"strict_rank": null,
+			"strict_found_at_5": false,
+			"strict_found_at_10": false,
+			"equivalent_rank": null,
+			"hits_returned": 10,
+			"documents_returned": [
+				"mars-climate-orbiter-mib-phase-i",
+				"mco-mib-project-management"
+			],
+			"chunk_ids": [
+				"mars-climate-orbiter-mib-phase-i:0023",
+				"mco-mib-project-management:0005",
+				"mco-mib-project-management:0026",
+				"mco-mib-project-management:0006",
+				"mco-mib-project-management:0107",
+				"mco-mib-project-management:0112",
+				"mco-mib-project-management:0017",
+				"mco-mib-project-management:0003",
+				"mco-mib-project-management:0000",
+				"mco-mib-project-management:0034"
+			],
+			"bridge_ranks": {
+				"mco-mib-project-management:30": null
+			}
+		}
+	]
+}
