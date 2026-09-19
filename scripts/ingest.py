@@ -484,7 +484,7 @@ def write_receipt(
     seconds: float,
     started: str,
     dry_run: bool,
-) -> Path:
+) -> Path | None:
     characters = sum(len(chunk["text"]) for chunk in chunks)
     receipt = {
         "milestone": "M2",
@@ -519,10 +519,15 @@ def write_receipt(
             "value of each usage header as observed.",
         },
     }
+    text = mask(json.dumps(receipt, indent="\t", ensure_ascii=False), api.secrets)
+    if dry_run:
+        # A dry run paid for nothing, so it has nothing to account for: printing
+        # the receipt keeps runs/ a record of what actually happened.
+        print(f"\n{text}")
+        return None
     RUNS.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = RUNS / f"{stamp}-ingest.json"
-    text = mask(json.dumps(receipt, indent="\t", ensure_ascii=False), api.secrets)
     path.write_text(text + "\n", encoding="utf-8")
     return path
 
@@ -579,7 +584,8 @@ def main(argv: list[str] | None = None) -> int:
         "embeddings_reused_from_cache": len(chunks) - embedded,
     }
     receipt = write_receipt(api, chunks, counts, time.monotonic() - clock, started, args.dry_run)
-    print(f"\nDone in {time.monotonic() - clock:.1f}s. Receipt: {receipt.relative_to(REPO_ROOT)}")
+    where = f"Receipt: {receipt.relative_to(REPO_ROOT)}" if receipt else "Dry run — no receipt written."
+    print(f"\nDone in {time.monotonic() - clock:.1f}s. {where}")
     return 0
 
 

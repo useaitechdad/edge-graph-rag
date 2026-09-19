@@ -14,6 +14,8 @@ corpus/raw/
 corpus/text/
 # Rebuilt from corpus/text/ by scripts/chunk.py, deterministically.
 corpus/chunks.jsonl
+# Rebuilt from runs/tmp/extractions.jsonl by scripts/build_graph.py, deterministically.
+corpus/graph.json
 runs/tmp/
 .DS_Store
 __pycache__/
