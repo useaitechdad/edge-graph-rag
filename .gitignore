@@ -1,8 +1,15 @@
 node_modules/
 .wrangler/
+# Generated from wrangler.template.jsonc: holds an account-specific D1 id.
+wrangler.jsonc
 .dev.vars
+# Deploy credentials, read only by scripts/_auth.sh.
+.cloudflare.env
 .env
 .env.*
+# The reports are downloaded from their official hosts by scripts/fetch-corpus.py
+# and never redistributed from here; MANIFEST.json pins each one by sha256.
 corpus/raw/
+corpus/text/
 runs/tmp/
 .DS_Store

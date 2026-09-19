@@ -1,0 +1,38 @@
+// Template for wrangler.jsonc, which is generated and NOT committed — it would
+// otherwise carry an account-specific D1 database id.
+//
+// Generate it with `./scripts/setup-cloudflare.sh` (creates the D1 database and
+// the Vectorize index, then fills in the id below), or, for local work only,
+// with `./scripts/migrate-local.sh`, which substitutes a dummy id.
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "edge-graph-rag",
+	"main": "src/index.ts",
+	// The newest date the bundled workerd in this repo's test runner accepts.
+	"compatibility_date": "2026-08-22",
+	"observability": { "enabled": true },
+
+	// Chunks, nodes and edges. Runs fully locally under `wrangler dev`.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "edge-graph-rag",
+			"database_id": "__D1_DATABASE_ID__",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	// Vectorize has no local simulator, so `wrangler dev` reaches the real index
+	// over a remote binding. 768 dimensions, cosine — see scripts/setup-cloudflare.sh.
+	"vectorize": [
+		{
+			"binding": "VECTORS",
+			"index_name": "edge-graph-rag-chunks",
+			"remote": true
+		}
+	],
+
+	// Same story for Workers AI: remote binding, embeddings from
+	// @cf/baai/bge-base-en-v1.5 (768 dims, 512 input tokens, pooling "cls").
+	"ai": { "binding": "AI", "remote": true }
+}

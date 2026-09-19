@@ -1,0 +1,26 @@
+{
+  "name": "edge-graph-rag",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A small Graph RAG service on Cloudflare Workers, D1 and Vectorize.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "./scripts/dev.sh",
+    "deploy": "./scripts/deploy.sh",
+    "setup": "./scripts/setup-cloudflare.sh",
+    "migrate:local": "./scripts/migrate-local.sh",
+    "migrate:remote": "./scripts/migrate-remote.sh",
+    "test": "vitest run && npm run test:eval",
+    "test:worker": "vitest run",
+    "test:eval": "python3 eval/test_validate.py",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@cloudflare/workers-types": "^5.20260919.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.135.0"
+  }
+}
