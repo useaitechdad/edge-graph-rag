@@ -9,7 +9,7 @@ describe('GET /health', () => {
 		expect(await response.json()).toEqual({
 			status: 'ok',
 			service: 'edge-graph-rag',
-			milestone: 'M0',
+			milestone: 'M2',
 		});
 	});
 
@@ -19,8 +19,8 @@ describe('GET /health', () => {
 		expect(response.headers.get('allow')).toBe('GET');
 	});
 
-	it('404s everything else — there is nothing else yet', async () => {
-		const response = await SELF.fetch('https://example.com/search');
+	it('404s a route that does not exist', async () => {
+		const response = await SELF.fetch('https://example.com/graph');
 		expect(response.status).toBe(404);
 	});
 });
