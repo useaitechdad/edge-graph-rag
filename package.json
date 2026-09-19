@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "A small Graph RAG service on Cloudflare Workers, D1 and Vectorize.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "./scripts/dev.sh",
     "deploy": "./scripts/deploy.sh",

@@ -7,21 +7,21 @@ The corpus is a set of public-domain NASA mishap investigation reports. The ques
 asking about them cross documents — a contractor named in one report, a failure described in
 another — which is exactly where a single vector lookup tends to stay inside one report.
 
-**Status: M2 has run. M3 is written and has not.** The corpus is cut into 1,373 chunks, the
-ingest has embedded them and filled Vectorize and D1, and `GET /search` answers with the
-nearest passages — the vector arm of the comparison. The baseline is in: **14 of 24 questions
-at k=10** under Amendment 1, 12 of 24 strict, with the receipt in `runs/`.
+**Status: M0 through M5 complete.** The corpus is cut into 1,373 chunks, embedded into
+Vectorize and D1, and extracted into 5,036 entity nodes and 9,998 edges loaded into remote D1.
+Both arms of the comparison are evaluated on the frozen 24-question benchmark:
 
-M3 is the code that builds the graph and nothing that uses it: `scripts/extract.py` reads every
-chunk with Claude and records the entities and relations that chunk states,
-`scripts/build_graph.py` resolves those into one set of nodes and edges, and
-`scripts/load_graph.py` writes them into D1. None of it has been run against the real API yet,
-so there is no graph in the database and no second number to put beside the first.
+- **Vector-only baseline (M2)**: **14 of 24 questions at k=10** under Amendment 1 (12 of 24 strict).
+- **Graph retrieval + Re-ranking (M4)**: **17 of 24 questions at k=10** under Amendment 1 (15 of 24 strict).
+  - Single-hop control: **7/10** (zero regression; 3 questions improved rank).
+  - Multi-hop specific: **6/9** (+2 over vector).
+  - Multi-hop generic: **4/5** (+1 over vector).
+  - All 17 hits placed within the top 5 chunks (`@5` = 17/24).
+- **Limits & routing rule (M5)**: documented in `eval/limits.md`. Graph candidates only displace
+  vector hits when cross-encoder scored; 2 hops add no net recall over 1 hop without edge constraints;
+  supernodes (`LMA` with 568 edges) act as gravity wells; latency increases 3.8x (~267 ms to ~1,020 ms).
 
-One result is in, though, and it comes before retrieval matters: all 45 gold passages survive
-chunking. `eval/coverage.py` checks that every quote the eval set asks for is still held whole
-by some chunk, because a recall number measured against chunks that lost the answer is a
-measurement of the chunker.
+All 45 gold passages survive chunking (`eval/coverage.py`), and all receipts sit under `runs/`.
 
 ## Milestones
 
@@ -69,8 +69,8 @@ extractions produce byte-identical bytes.
 
 | Path | What it is |
 |------|------------|
-| `src/index.ts` | The Worker. `GET /health` and `GET /search?q=…&k=10` |
-| `src/retrieval.ts` | The `Retriever` interface and the vector implementation. M4's graph retriever arrives beside it, not inside it |
+| `src/index.ts` | The Worker. `GET /health` and `GET /search?q=…&k=10&retriever=graph` |
+| `src/retrieval.ts` | The `Retriever` interface, `VectorRetriever`, and M4's `GraphRetriever` with CTE graph walk and re-ranking |
 | `src/embed.ts` | The embedding model and its pooling, in one place, for the query side |
 | `migrations/` | D1 schema: documents, chunks, nodes, edges, node_chunks |
 | `scripts/chunk.py` | `corpus/text/` → `corpus/chunks.jsonl`. Deterministic: same corpus, same bytes |
@@ -84,8 +84,9 @@ extractions produce byte-identical bytes.
 | `eval/equivalents.notes.md` | How each equivalent was found — the answer, the search terms, what was accepted and what was rejected |
 | `eval/scoring.py` | The containment rule from `DESIGN.md`, implemented once and imported twice |
 | `eval/coverage.py` | Whether the chunks can still reach every gold passage. Run it before believing a recall number |
-| `eval/run.py` | The eval run: `/search` per question, recall at 10 and at 5, a receipt |
+| `eval/run.py` | The eval run: `/search` per question, recall at 10 and at 5, writes a receipt |
 | `eval/groups.json` | Which multi-hop questions have a specific final clause and which a generic one |
+| `eval/limits.md` | M5 analysis: single-hop control, 1-hop vs 2-hop, hub node dilution, latency, and the routing rule |
 | `corpus/MANIFEST.json` | The seven reports: official URL, sha256, rights note. The files themselves are downloaded by `scripts/fetch-corpus.py`, never redistributed from here |
 | `runs/` | One receipt per ingest and per eval run. `runs/tmp/` is scratch — progress and cached embeddings — and is ignored |
 | `scripts/` | Every operational step. Nothing in this project is hand-typed at a shell |
@@ -127,7 +128,7 @@ python3 eval/coverage.py          # is every gold passage still held by a chunk?
 ./scripts/migrate-remote.sh
 ./scripts/ingest.sh               # embeds, indexes, writes the rows. --dry-run first if you want the sizes
 ./scripts/dev.sh                  # serves /search on 127.0.0.1:8787
-./scripts/eval.sh                 # scores the frozen set, writes runs/<timestamp>-eval-vector.json
+./scripts/eval.sh --retriever vector # scores vector baseline (M2), writes runs/*-eval-vector.json
 ```
 
 Then M3, the graph. Only the last of the three touches Cloudflare:
@@ -137,6 +138,14 @@ Then M3, the graph. Only the last of the three touches Cloudflare:
                                   # --backend cli to spend this machine's Claude Code login instead
 python3 scripts/build_graph.py    # extractions -> corpus/graph.json, and prints what merged into what
 ./scripts/load-graph.sh           # the graph into D1's nodes, edges and node_chunks
+```
+
+Then M4 and M5, evaluating graph retrieval and individual questions:
+
+```sh
+./scripts/eval.sh                 # scores graph retriever (M4 default), writes runs/*-eval-graph.json
+./scripts/ask.sh --id q11         # asks one question, prints ranked hits with gold/bridge labels
+./scripts/ask.sh --id q11 --retriever vector  # asks the same question with vector-only
 ```
 
 `ingest.sh` is safe to interrupt and re-run: every write is an upsert, and the embeddings it
@@ -160,3 +169,8 @@ those lines would read as done on the next resume. Re-run the same command to ca
 Embeddings come from `@cf/baai/bge-base-en-v1.5`: 768 dimensions, 512 input tokens, and
 `pooling: "cls"` — which has to be the same for documents and for queries, or the two live in
 different spaces. `src/embed.ts` and `scripts/ingest.py` are the two places that say so.
+
+## Licence
+
+Apache-2.0. See `LICENSE`.
+
