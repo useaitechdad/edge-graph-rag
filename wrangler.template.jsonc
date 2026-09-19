@@ -12,13 +12,18 @@
 	"compatibility_date": "2026-08-22",
 	"observability": { "enabled": true },
 
-	// Chunks, nodes and edges. Runs fully locally under `wrangler dev`.
+	// Chunks, nodes and edges. D1 has a local simulator, but `wrangler dev` reads
+	// the remote database on purpose: the ingest writes there, and the Vectorize
+	// index is remote either way. With a local D1 every vector match came back
+	// without its chunk row, and /search answered with no hits at all.
+	// The tests still use the local simulator (vitest.config.ts).
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "edge-graph-rag",
 			"database_id": "__D1_DATABASE_ID__",
-			"migrations_dir": "migrations"
+			"migrations_dir": "migrations",
+			"remote": true
 		}
 	],
 
