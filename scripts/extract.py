@@ -2,11 +2,21 @@
 """Read every chunk with Claude and record the entities and relations it states.
 
 This is M3's offline half: nothing here talks to Cloudflare and nothing here
-retrieves anything. One request per chunk to the Anthropic Messages API, forced
-through a single tool so the answer arrives as structured data rather than prose,
-and one JSON line per chunk appended to runs/tmp/extractions.jsonl:
+retrieves anything. One call per chunk, the answer forced into a schema so it
+arrives as structured data rather than prose, and one JSON line per chunk
+appended to runs/tmp/extractions.jsonl:
 
-    {"chunk", "model", "status", "stop_reason", "extraction", "usage", "repairs"}
+    {"chunk", "model", "backend", "status", "stop_reason", "extraction", "usage", "repairs"}
+
+There are two ways to reach the model, and they differ only in who pays:
+
+    --backend api   (default)  the Anthropic Messages API, on ANTHROPIC_API_KEY,
+                               with the schema forced through a single tool.
+    --backend cli              the Claude Code CLI already installed on this
+                               machine, headless, on whatever login it holds —
+                               so the run spends a subscription rather than
+                               credit. Same instructions, same schema, same
+                               records: the two can share one extractions.jsonl.
 
 `scripts/build_graph.py` turns those lines into corpus/graph.json, and
 `scripts/load_graph.py` writes that into D1.
@@ -31,6 +41,7 @@ Usage:
     ./scripts/extract.sh                            # the whole corpus
     ./scripts/extract.sh --dry-run                  # no network at all; prints request sizes
     ./scripts/extract.sh --limit 20                 # the first 20 chunks, for a smoke test
+    ./scripts/extract.sh --backend cli              # through the local Claude Code login
     ./scripts/extract.sh --only contour-mib:0012 --show
 """
 
@@ -40,7 +51,10 @@ import argparse
 import json
 import os
 import re
+import shlex
+import subprocess
 import sys
+import tempfile
 import textwrap
 import threading
 import time
@@ -50,6 +64,7 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -74,11 +89,32 @@ MAX_TOKENS = 2000
 
 TIMEOUT = 120
 
+# --backend cli. The binary is looked up on PATH so the backend works wherever
+# Claude Code is installed; scripts/extract.sh checks it is there before Python
+# starts. 180 seconds because a CLI run pays its own start-up before it reaches
+# the model, and a slow answer is still cheaper than a chunk that has to be redone.
+CLAUDE_BIN = "claude"
+CLI_TIMEOUT = 180
+
+# Either of these in the child's environment makes the CLI authenticate as the
+# API — the one thing --backend cli exists to avoid, and it would do it silently,
+# on the card. They are stripped before the process starts.
+BILLED_TO_THE_API = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+
 # Retried with backoff; anything else is a permanent failure for that chunk.
 RETRY_STATUSES = (408, 409, 429, 500, 502, 503, 504, 529)
 MAX_ATTEMPTS = 5
 BACKOFF_SECONDS = 2.0
 BACKOFF_CAP = 60.0
+
+# When the far end is gone rather than merely awkward — an expired login, a
+# subscription usage limit, a key that stopped working — every remaining chunk
+# fails the same way, and each failure writes a line that a later resume then
+# reads as done and skips. The corpus would be quietly half-extracted with no
+# cheap way to tell which half. Five failures in a row is taken as "not this
+# chunk's fault", and the run stops while the rest of the corpus is still
+# unwritten and therefore still resumable.
+ABORT_AFTER = 5
 
 # The kinds of thing an accident investigation report is made of. Kept short on
 # purpose: every extra type is another way for the same entity to arrive under
@@ -224,6 +260,45 @@ USAGE_FIELDS = (
     "cache_read_input_tokens",
 )
 
+# The same discipline for the CLI's result object, which is a different shape
+# entirely: it reports on a session rather than on a request. Recorded from CLI
+# 2.1.278; a newer CLI that grows a field shows it in the receipt rather than
+# changing what is extracted.
+KNOWN_CLI_KEYS = {
+    "api_error_status",
+    "duration_api_ms",
+    "duration_ms",
+    "fast_mode_disabled_reason",
+    "fast_mode_state",
+    "first_content_frame_ms",
+    "is_error",
+    "modelUsage",
+    "num_turns",
+    "permission_denials",
+    "queued_turn_count",
+    "result",
+    "result_index",
+    "session_id",
+    "stop_reason",
+    "structured_output",
+    "subagent_stats",
+    "subtype",
+    "terminal_reason",
+    "time_to_request_ms",
+    "total_cost_usd",
+    "ttft_ms",
+    "ttft_stream_ms",
+    "type",
+    "usage",
+    "uuid",
+}
+KNOWN_CLI_USAGE_KEYS = KNOWN_USAGE_KEYS | {
+    "output_tokens_details",
+    "inference_geo",
+    "iterations",
+    "speed",
+}
+
 NOT_SNAKE = re.compile(r"[^a-z0-9]+")
 
 
@@ -252,6 +327,35 @@ def http_post(url: str, headers: dict[str, str], body: bytes, timeout: int) -> t
             {name.lower(): value for name, value in (exc.headers or {}).items()},
             exc.read(),
         )
+
+
+def claude_cli(command: list[str], stdin: str, env: dict[str, str], timeout: int) -> tuple[int, str, str]:
+    """One run of the local CLI: no retries, no interpretation, no logging.
+
+    What http_post is to the API backend — the only place --backend cli leaves
+    this process, and the seam the tests replace with a fake.
+
+    The working directory is a fresh empty one for every run, and that is not
+    tidiness. The CLI reads the directory it is started in: a CLAUDE.md, a
+    settings file or a git repo above the extraction would join the prompt
+    without ever appearing in it, and the passages would then be read under
+    instructions this file does not contain. `env` arrives already stripped —
+    see ClaudeCli.child_env — because the caller is what the tests check.
+
+    Returns (exit code, stdout, stderr); a timeout raises, as subprocess does.
+    """
+    with tempfile.TemporaryDirectory(prefix="extract-cli-") as nowhere:
+        finished = subprocess.run(
+            command,
+            input=stdin,
+            cwd=nowhere,
+            env=env,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+    return finished.returncode, finished.stdout, finished.stderr
 
 
 def tool_definition() -> dict:
@@ -408,7 +512,135 @@ def repair(extraction: dict) -> tuple[dict, dict]:
     return {"entities": entities, "relations": relations}, dict(report)
 
 
-class Anthropic:
+class Answer(NamedTuple):
+    """What a backend got back, reduced to the four things a record needs.
+
+    The two backends return wildly different objects — a Messages API response
+    and a CLI session result — and this is where that difference stops. Anything
+    below this line treats them the same.
+    """
+
+    extraction: dict
+    stop_reason: str | None
+    usage: dict[str, int]
+    model: str
+
+
+class Backend:
+    """What `run`, `receipt_for` and `main` need, whichever way the model is reached.
+
+    Subclasses supply `call`, which does the reaching. Everything else — the
+    counters, the lock that guards them, what a record says, and when a run of
+    failures means the far end is gone rather than this chunk being awkward — is
+    decided once, here, so that the two backends cannot drift into writing
+    different records for the same passage.
+    """
+
+    name = "?"
+    max_tokens: int | None = None
+    known_top: set[str] = set()
+    known_usage: set[str] = set()
+
+    def __init__(self, model: str, dry_run: bool) -> None:
+        self.model = model
+        self.dry_run = dry_run
+        self.secrets: list[str] = []
+        self.lock = threading.Lock()
+        self.statuses: Counter[str] = Counter()
+        self.usage: Counter[str] = Counter()
+        self.retries = 0
+        self.unexpected_fields: set[str] = set()
+        self.consecutive_failures = 0
+        self.aborted: str | None = None
+
+    # --- one chunk -----------------------------------------------------------
+    def call(self, title: str, chunk: dict) -> Answer:
+        """Reach the model once, with retries. Raises ExtractError when it cannot."""
+        raise NotImplementedError
+
+    def extract(self, title: str, chunk: dict) -> dict:
+        """One chunk in, one record for extractions.jsonl out. Never raises."""
+        record: dict = {"chunk": chunk["id"], "model": self.model, "backend": self.name}
+        if self.dry_run:
+            record["status"] = "dry-run"
+            record["extraction"] = {"entities": [], "relations": []}
+            record["repairs"] = {}
+            return record
+        try:
+            answer = self.call(title, chunk)
+        except ExtractError as exc:
+            record["status"] = "failed"
+            record["error"] = str(exc)
+            record["extraction"] = {"entities": [], "relations": []}
+            record["repairs"] = {}
+            return record
+
+        _, repairs = repair(answer.extraction)
+        record["model"] = answer.model
+        record["stop_reason"] = answer.stop_reason
+        record["status"] = "truncated" if answer.stop_reason == "max_tokens" else "ok"
+        record["extraction"] = answer.extraction
+        record["usage"] = answer.usage
+        record["repairs"] = repairs
+        return record
+
+    def remember(self, payload: dict) -> None:
+        """Sum the tokens, and notice any field this backend has not seen before.
+
+        A new field lands in the receipt rather than in a surprise: the usage
+        objects are the part of both answers most likely to grow a key between
+        one run and the next.
+        """
+        usage = payload.get("usage") or {}
+        with self.lock:
+            for field in USAGE_FIELDS:
+                value = usage.get(field)
+                if isinstance(value, int):
+                    self.usage[field] += value
+            self.unexpected_fields.update(set(payload) - self.known_top)
+            self.unexpected_fields.update(f"usage.{key}" for key in set(usage) - self.known_usage)
+
+    # --- the circuit breaker -------------------------------------------------
+    def note(self, record: dict) -> bool:
+        """Count consecutive failures. True on the one call that trips the breaker.
+
+        Called under the writer lock in `run`, so the sequence it sees is the
+        order the records were written, and only one thread can be the one that
+        trips it however many are in flight.
+        """
+        with self.lock:
+            if record.get("status") != "failed":
+                self.consecutive_failures = 0
+                return False
+            self.consecutive_failures += 1
+            if self.consecutive_failures < ABORT_AFTER or self.aborted is not None:
+                return False
+            self.aborted = (
+                f"{ABORT_AFTER} chunks failed in a row, so this is the {self.name} backend "
+                f"and not the passages. Last error: {record.get('error') or 'unknown'}"
+            )
+            return True
+
+    def stopped(self) -> bool:
+        """Read without the lock, deliberately: every worker asks this before every
+        chunk, and the only cost of reading a stale None is one more chunk."""
+        return self.aborted is not None
+
+    # --- what a dry run says -------------------------------------------------
+    def dry_run_lines(self, count: int) -> list[str]:
+        """The destination, and the shape of what would go to it."""
+        raise NotImplementedError
+
+    def prefix_bytes(self) -> int:
+        """The fixed part of every call: the instructions and the schema."""
+        raise NotImplementedError
+
+    def dry_run_limits(self) -> list[str]:
+        """Whatever ceiling this backend runs under, if it has one worth printing."""
+        return []
+
+
+class Anthropic(Backend):
     """The one endpoint this milestone touches, in one place.
 
     The request shape below was taken from Anthropic's Messages API
@@ -416,18 +648,27 @@ class Anthropic:
     is one function rather than a search.
     """
 
+    name = "api"
+    max_tokens = MAX_TOKENS
+    known_top = KNOWN_TOP_KEYS
+    known_usage = KNOWN_USAGE_KEYS
+
     def __init__(self, key: str, model: str, dry_run: bool) -> None:
+        super().__init__(model, dry_run)
         self._key = key
-        self.model = model
-        self.dry_run = dry_run
         self.secrets = [key]
-        self.lock = threading.Lock()
-        self.statuses: Counter[str] = Counter()
-        self.usage: Counter[str] = Counter()
-        self.retries = 0
-        self.unexpected_fields: set[str] = set()
 
     # --- the request ---------------------------------------------------------
+    def system(self) -> list[dict]:
+        """The cached prefix, as its own method so a dry run can size it without a chunk."""
+        return [
+            {
+                "type": "text",
+                "text": INSTRUCTIONS,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+
     def request_body(self, title: str, chunk: dict) -> dict:
         """POST https://api.anthropic.com/v1/messages
 
@@ -451,13 +692,7 @@ class Anthropic:
             "model": self.model,
             "max_tokens": MAX_TOKENS,
             "thinking": {"type": "disabled"},
-            "system": [
-                {
-                    "type": "text",
-                    "text": INSTRUCTIONS,
-                    "cache_control": {"type": "ephemeral"},
-                }
-            ],
+            "system": self.system(),
             "tools": [tool_definition()],
             "tool_choice": {"type": "tool", "name": TOOL_NAME},
             "messages": [{"role": "user", "content": passage(title, chunk)}],
@@ -500,44 +735,204 @@ class Anthropic:
             time.sleep(wait_for(headers, attempt))
         raise ExtractError("unreachable")  # pragma: no cover
 
-    def remember(self, payload: dict) -> None:
-        usage = payload.get("usage") or {}
-        with self.lock:
-            for field in USAGE_FIELDS:
-                value = usage.get(field)
-                if isinstance(value, int):
-                    self.usage[field] += value
-            self.unexpected_fields.update(set(payload) - KNOWN_TOP_KEYS)
-            self.unexpected_fields.update(f"usage.{key}" for key in set(usage) - KNOWN_USAGE_KEYS)
+    def call(self, title: str, chunk: dict) -> Answer:
+        payload = self.send(self.request_body(title, chunk))
+        return Answer(
+            extraction=tool_input(payload),
+            stop_reason=payload.get("stop_reason"),
+            usage=int_fields(payload.get("usage")),
+            model=self.model,
+        )
 
-    def extract(self, title: str, chunk: dict) -> dict:
-        """One chunk in, one record for extractions.jsonl out. Never raises."""
-        body = self.request_body(title, chunk)
-        record: dict = {"chunk": chunk["id"], "model": self.model}
-        if self.dry_run:
-            record["status"] = "dry-run"
-            record["extraction"] = {"entities": [], "relations": []}
-            record["repairs"] = {}
-            return record
+    # --- what a dry run says -------------------------------------------------
+    def dry_run_lines(self, count: int) -> list[str]:
+        return [f"==> {plural(count, 'request')} to {API_URL}, model {self.model}"]
+
+    def prefix_bytes(self) -> int:
+        return len(json.dumps({"system": self.system(), "tools": [tool_definition()]}).encode("utf-8"))
+
+    def dry_run_limits(self) -> list[str]:
+        return [f"    max output tokens per request               {MAX_TOKENS}"]
+
+
+class ClaudeCli(Backend):
+    """The same extraction, through the Claude Code CLI already on this machine.
+
+    The point of it is who pays. `claude -p` runs headless on whatever login the
+    machine holds, so extracting 1,373 chunks spends a subscription that is
+    already bought rather than API credit. Nothing about the reading changes: the
+    system prompt is the same INSTRUCTIONS, and the schema is the same schema —
+    handed over as --json-schema instead of as a forced tool, which is the CLI's
+    way of saying the same thing. The records it writes are therefore the same
+    shape as the API's, and one extractions.jsonl can hold both.
+
+    Two things have to be true of the child process or the saving evaporates.
+    Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN may be in its environment,
+    because either one makes the CLI bill the API instead — quietly, with no sign
+    of it in the output. And its working directory has to be somewhere with no
+    CLAUDE.md, no settings file and no git repo, so that nothing local joins the
+    prompt. --safe-mode covers the rest: no hooks, no skills, no MCP servers, and
+    authentication untouched.
+    """
+
+    name = "cli"
+    max_tokens = None
+    known_top = KNOWN_CLI_KEYS
+    known_usage = KNOWN_CLI_USAGE_KEYS
+
+    def __init__(self, model: str, dry_run: bool) -> None:
+        super().__init__(model, dry_run)
+        # The API backend's tool schema, which is the whole of what --json-schema
+        # wants: the CLI has no tool to name, only the shape of the answer.
+        self.schema = json.dumps(tool_definition()["input_schema"])
+
+    # --- the call ------------------------------------------------------------
+    def command(self) -> list[str]:
+        """The exact argv, and why each flag is on it.
+
+          -p                        headless: read one prompt, print one answer, exit.
+          --safe-mode               no CLAUDE.md, no hooks, no skills, no MCP servers, so
+                                    the instructions are INSTRUCTIONS and nothing else.
+                                    It does not touch authentication.
+          --model                   an alias such as `sonnet` or a full id; the id that
+                                    actually answered is read back out of the result.
+          --tools ""                no tools at all. This is one turn of reading, and a
+                                    run that could open files or run commands would not
+                                    be the same experiment as the API backend's.
+          --no-session-persistence  1,373 runs should leave nothing behind.
+          --output-format json      one JSON object on stdout, to be parsed rather than
+                                    scraped.
+          --json-schema             the answer, in `structured_output`, in the shape the
+                                    build step already knows how to read.
+
+        Not --bare, which forces ANTHROPIC_API_KEY authentication and would put
+        the run straight back on the bill this backend exists to get off.
+
+        The passage is not here: it goes in on stdin, because a passage is
+        arbitrary report text and some of them begin with a dash.
+        """
+        return [
+            CLAUDE_BIN,
+            "-p",
+            "--safe-mode",
+            "--model",
+            self.model,
+            "--tools",
+            "",
+            "--no-session-persistence",
+            "--system-prompt",
+            INSTRUCTIONS,
+            "--output-format",
+            "json",
+            "--json-schema",
+            self.schema,
+        ]
+
+    def child_env(self) -> dict[str, str]:
+        """This process's environment, minus the two variables that change who pays.
+
+        Everything else is passed through: the CLI needs HOME to find the login
+        it is meant to use, and PATH to find itself.
+        """
+        env = dict(os.environ)
+        for name in BILLED_TO_THE_API:
+            env.pop(name, None)
+        return env
+
+    def attempt(self, command: list[str], env: dict[str, str], text: str) -> tuple[str, str, dict | None]:
+        """One run of the CLI, classified: (status key, masked detail, result or None).
+
+        The status keys are to `--backend cli` what HTTP statuses are to the API
+        backend, and they end up in the same place in the receipt:
+
+            cli-ok          an answer, in the schema
+            cli-exit-N      the process died; N is its exit code
+            cli-timeout     no answer inside CLI_TIMEOUT
+            cli-unreadable  stdout was not one JSON object
+            cli-error       the CLI reported the turn as an error
+            cli-no-result   no structured_output, so nothing was extracted
+        """
         try:
-            payload = self.send(body)
-        except ExtractError as exc:
-            record["status"] = "failed"
-            record["error"] = str(exc)
-            record["extraction"] = {"entities": [], "relations": []}
-            record["repairs"] = {}
-            return record
+            code, out, err = claude_cli(command, text, env, CLI_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            return "cli-timeout", f"no answer within {CLI_TIMEOUT}s", None
+        if code != 0:
+            return f"cli-exit-{code}", self.detail(err or out), None
+        try:
+            payload = json.loads(out)
+        except ValueError:
+            return "cli-unreadable", self.detail(out), None
+        if not isinstance(payload, dict):
+            return "cli-unreadable", self.detail(out), None
+        if payload.get("is_error"):
+            reason = payload.get("api_error_status") or payload.get("subtype") or ""
+            return "cli-error", self.detail(f"{reason} {payload.get('result') or ''}"), None
+        if not isinstance(payload.get("structured_output"), dict):
+            return "cli-no-result", self.detail(str(payload.get("result") or "")), None
+        return "cli-ok", "", payload
 
-        raw = tool_input(payload)
-        _, repairs = repair(raw)
-        record["stop_reason"] = payload.get("stop_reason")
-        record["status"] = "truncated" if payload.get("stop_reason") == "max_tokens" else "ok"
-        record["extraction"] = raw
-        record["usage"] = {
-            field: value for field, value in (payload.get("usage") or {}).items() if isinstance(value, int)
-        }
-        record["repairs"] = repairs
-        return record
+    def detail(self, text: str) -> str:
+        """Enough of a failure to recognise it, and no more."""
+        return ingest.mask(text.strip()[:400], self.secrets)
+
+    def send(self, text: str) -> dict:
+        """The CLI's result object, after as many attempts as the limits allow.
+
+        Every failure here is retried, unlike the API backend where a 400 is
+        final. A local process has no status code that distinguishes "you asked
+        wrongly" from "not right now": a killed process, a login that expired
+        mid-run and a usage limit all arrive as some kind of error, and the
+        prompt is fixed, so asking again is the only thing worth doing. The
+        circuit breaker is what stops that being infinite optimism.
+        """
+        command = self.command()
+        env = self.child_env()
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            outcome, detail, payload = self.attempt(command, env, text)
+            with self.lock:
+                self.statuses[outcome] += 1
+            if payload is not None:
+                self.remember(payload)
+                return payload
+            if attempt == MAX_ATTEMPTS:
+                raise ExtractError(f"{outcome} after {attempt} attempt(s): {detail}")
+            with self.lock:
+                self.retries += 1
+            time.sleep(wait_for({}, attempt))
+        raise ExtractError("unreachable")  # pragma: no cover
+
+    def call(self, title: str, chunk: dict) -> Answer:
+        payload = self.send(passage(title, chunk))
+        return Answer(
+            extraction=payload["structured_output"],
+            stop_reason=payload.get("stop_reason"),
+            usage=int_fields(payload.get("usage")),
+            model=resolved_model(payload) or self.model,
+        )
+
+    # --- what a dry run says -------------------------------------------------
+    def dry_run_lines(self, count: int) -> list[str]:
+        """The command, with the two long arguments named rather than printed."""
+        shape = " ".join(
+            "<INSTRUCTIONS>"
+            if word == INSTRUCTIONS
+            else "<SCHEMA>"
+            if word == self.schema
+            else shlex.quote(word)
+            for word in self.command()
+        )
+        return [
+            f"==> {plural(count, 'run')} of the local {CLAUDE_BIN} CLI, model {self.model}",
+            f"    {shape}",
+            "    passage on stdin, working directory a fresh empty one",
+            f"    stripped from its environment: {', '.join(BILLED_TO_THE_API)}",
+        ]
+
+    def prefix_bytes(self) -> int:
+        return len(INSTRUCTIONS.encode("utf-8")) + len(self.schema.encode("utf-8"))
+
+    def dry_run_limits(self) -> list[str]:
+        return [f"    timeout per run                             {CLI_TIMEOUT}s"]
 
 
 def wait_for(headers: dict[str, str], attempt: int) -> float:
@@ -549,6 +944,30 @@ def wait_for(headers: dict[str, str], attempt: int) -> float:
         except ValueError:
             pass
     return min(BACKOFF_CAP, BACKOFF_SECONDS * (2 ** (attempt - 1)))
+
+
+def int_fields(usage: dict | None) -> dict[str, int]:
+    """The counted part of a usage object.
+
+    Both backends report tokens beside things that are not tokens — a service
+    tier, a speed, a nested breakdown, a list of iterations. Keeping only the
+    integers is what makes one record shape hold both, and it is why a new
+    counter needs no code here to be recorded.
+    """
+    return {field: value for field, value in (usage or {}).items() if isinstance(value, int)}
+
+
+def resolved_model(payload: dict) -> str | None:
+    """Which model actually answered, when the CLI names exactly one.
+
+    `--model sonnet` is an alias, and a record that says `sonnet` cannot be
+    compared with one from six months later. More than one key means more than
+    one model ran, and then there is no single honest answer to write down.
+    """
+    reported = payload.get("modelUsage")
+    if isinstance(reported, dict) and len(reported) == 1:
+        return next(iter(reported))
+    return None
 
 
 def tool_input(payload: dict) -> dict:
@@ -640,21 +1059,29 @@ def show(record: dict, chunk: dict) -> None:
 
 
 def receipt_for(
-    api: Anthropic,
+    api: Backend,
     counts: dict[str, int],
     seconds: float,
     started: str,
     dry_run: bool,
     concurrency: int,
 ) -> dict:
-    return {
+    """The run, accounted for.
+
+    `http_status_counts` keeps its name under either backend: for `--backend cli`
+    it holds the cli-* keys from ClaudeCli.attempt, which are the same thing one
+    layer down. Renaming it would have made every receipt already in runs/ the
+    odd one out, which is a worse trade than a slightly literal key.
+    """
+    receipt = {
         "milestone": "M3",
         "started_utc": started,
         "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "wall_seconds": round(seconds, 1),
         "dry_run": dry_run,
+        "backend": api.name,
         "model": api.model,
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": api.max_tokens,
         "concurrency": concurrency,
         "counts": counts,
         "http_status_counts": dict(sorted(api.statuses.items())),
@@ -667,6 +1094,11 @@ def receipt_for(
         },
         "unexpected_response_fields": sorted(api.unexpected_fields),
     }
+    # Only when it happened: a receipt that always says "aborted" trains the eye
+    # to skip the line that matters.
+    if api.aborted:
+        receipt["aborted"] = api.aborted
+    return receipt
 
 
 def write_receipt(receipt: dict, secrets: list[str], dry_run: bool) -> Path | None:
@@ -681,8 +1113,14 @@ def write_receipt(receipt: dict, secrets: list[str], dry_run: bool) -> Path | No
     return path
 
 
-def run(api: Anthropic, chunks: list[dict], args, book: dict[str, str]) -> dict[str, int]:
-    """Every chunk, `--concurrency` at a time, appended as each one lands."""
+def run(api: Backend, chunks: list[dict], args, book: dict[str, str]) -> dict[str, int]:
+    """Every chunk, `--concurrency` at a time, appended as each one lands.
+
+    Once the circuit breaker has tripped, the chunks still to come are declined
+    rather than attempted. The pool was handed all of them at the start, so
+    stopping the run means each worker refusing the rest — the few already in
+    flight finish and are written, because they are paid for either way.
+    """
     counts = Counter({"processed": 0, "failed": 0, "truncated": 0, "entities": 0, "relations": 0})
     for state in ("dropped_relations", "retyped_entities", "dropped_entities", "duplicate_entities"):
         counts[state] = 0
@@ -693,6 +1131,8 @@ def run(api: Anthropic, chunks: list[dict], args, book: dict[str, str]) -> dict[
         handle = EXTRACTIONS.open("a", encoding="utf-8")
 
     def one(chunk: dict) -> None:
+        if api.stopped():
+            return
         record = api.extract(book[chunk["document"]], chunk)
         clean, repairs = repair(record.get("extraction") or {})
         with writer:
@@ -717,6 +1157,11 @@ def run(api: Anthropic, chunks: list[dict], args, book: dict[str, str]) -> dict[
                     f"   {counts['relations']:>6} relations"
                     f"   {counts['failed']} failed"
                 )
+            if api.note(record):
+                print(f"\n!! {api.aborted}")
+                print("   Stopping, rather than writing a failed line for every chunk that is left.")
+                print("   Fix it and re-run the same command: what is already recorded is skipped,")
+                print(f"   so the run picks up at chunk {counts['processed'] + 1} of {len(chunks)}.")
 
     try:
         if args.concurrency <= 1:
@@ -731,20 +1176,22 @@ def run(api: Anthropic, chunks: list[dict], args, book: dict[str, str]) -> dict[
     return dict(counts)
 
 
-def dry_run_sizes(api: Anthropic, chunks: list[dict], book: dict[str, str]) -> None:
-    """What would be sent, and how big it is. No network, no receipt on disk."""
-    prefix = json.dumps({"system": api.request_body("", chunks[0])["system"], "tools": [tool_definition()]})
+def dry_run_sizes(api: Backend, chunks: list[dict], book: dict[str, str]) -> None:
+    """What would be sent, and how big it is. No network, no process, no receipt."""
+    prefix = api.prefix_bytes()
     passages = [len(passage(book[chunk["document"]], chunk).encode("utf-8")) for chunk in chunks]
-    print(f"==> {plural(len(chunks), 'request')} to {API_URL}, model {api.model}")
-    print(f"    cached prefix (instructions + tool schema)  {len(prefix.encode('utf-8')) / 1024:6.1f} KB")
+    for line in api.dry_run_lines(len(chunks)):
+        print(line)
+    print(f"    cached prefix (instructions + schema)       {prefix / 1024:6.1f} KB")
     print(f"    passage per request, smallest / largest     {min(passages)} / {max(passages)} bytes")
     print(f"    passages in total                           {sum(passages) / 1024:6.1f} KB")
     print(
         "    rough input tokens per request              "
-        f"~{round(len(prefix) / 4) + round(sum(passages) / len(passages) / 4)}"
+        f"~{round(prefix / 4) + round(sum(passages) / len(passages) / 4)}"
         " (characters / 4; there is no tokenizer offline)"
     )
-    print("    max output tokens per request               " f"{MAX_TOKENS}")
+    for line in api.dry_run_limits():
+        print(line)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -752,6 +1199,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit", type=int, default=None, help="read only the first N chunks")
     parser.add_argument("--only", default=None, help="one chunk id; reruns it even if it is already done")
     parser.add_argument("--model", default=MODEL, help=f"model id (default {MODEL})")
+    parser.add_argument(
+        "--backend",
+        choices=("api", "cli"),
+        default="api",
+        help="api: the Messages API on ANTHROPIC_API_KEY (default). "
+        "cli: the local Claude Code CLI, on whatever login this machine holds",
+    )
     parser.add_argument("--concurrency", type=int, default=4, help="requests in flight (default 4)")
     parser.add_argument("--show", action="store_true", help="pretty-print what came back for each chunk")
     parser.add_argument(
@@ -762,7 +1216,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not args.dry_run and not key:
+    if args.backend == "api" and not args.dry_run and not key:
         print("Refusing to run: no ANTHROPIC_API_KEY. Use ./scripts/extract.sh.", file=sys.stderr)
         return 2
     if not CHUNKS.exists():
@@ -771,7 +1225,12 @@ def main(argv: list[str] | None = None) -> int:
 
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
     clock = time.monotonic()
-    api = Anthropic(key, args.model, args.dry_run)
+    # The cli backend takes no key on purpose: it must not have one to give away.
+    api: Backend = (
+        ClaudeCli(args.model, args.dry_run)
+        if args.backend == "cli"
+        else Anthropic(key, args.model, args.dry_run)
+    )
 
     try:
         book = titles()
@@ -799,8 +1258,8 @@ def main(argv: list[str] | None = None) -> int:
             counts = {"processed": 0}
         else:
             print(
-                f"==> extracting {plural(len(todo), 'chunk')} with {api.model}, "
-                f"{args.concurrency} at a time"
+                f"==> extracting {plural(len(todo), 'chunk')} with {api.model} "
+                f"via the {api.name} backend, {args.concurrency} at a time"
             )
             counts = run(api, todo, args, book)
     except ExtractError as exc:
@@ -814,8 +1273,8 @@ def main(argv: list[str] | None = None) -> int:
     receipt = receipt_for(api, counts, time.monotonic() - clock, started, args.dry_run, args.concurrency)
     path = write_receipt(receipt, api.secrets, args.dry_run)
     where = f"Receipt: {path.relative_to(REPO_ROOT)}" if path else "Dry run — no receipt written."
-    print(f"\nDone in {time.monotonic() - clock:.1f}s. {where}")
-    return 0
+    print(f"\n{'Aborted after' if api.aborted else 'Done in'} {time.monotonic() - clock:.1f}s. {where}")
+    return 1 if api.aborted else 0
 
 
 if __name__ == "__main__":
