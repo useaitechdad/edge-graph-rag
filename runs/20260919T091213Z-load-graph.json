@@ -1,0 +1,25 @@
+{
+	"milestone": "M3",
+	"step": "load-graph",
+	"started_utc": "2026-09-19T09:09:59+00:00",
+	"finished_utc": "2026-09-19T09:12:13+00:00",
+	"wall_seconds": 133.6,
+	"dry_run": false,
+	"counts": {
+		"nodes": 5036,
+		"edges": 9998,
+		"node_chunks": 12444
+	},
+	"graph": {
+		"documents": 7,
+		"nodes_in_more_than_one_document": 271
+	},
+	"rows_per_statement": {
+		"nodes": 24,
+		"edges": 19,
+		"node_chunks": 48
+	},
+	"http_status_counts": {
+		"d1-query 200": 1000
+	}
+}
