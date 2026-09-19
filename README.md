@@ -7,12 +7,16 @@ The corpus is a set of public-domain NASA mishap investigation reports. The ques
 asking about them cross documents — a contractor named in one report, a failure described in
 another — which is exactly where a single vector lookup tends to stay inside one report.
 
-**Status: M2, written but not yet run.** The corpus is cut into 1,373 chunks, there is an
-ingest that embeds them and fills Vectorize and D1, and `GET /search` answers with the nearest
-passages — the vector arm of the comparison. `eval/run.py` scores the frozen set against it.
+**Status: M2 has run. M3 is written and has not.** The corpus is cut into 1,373 chunks, the
+ingest has embedded them and filled Vectorize and D1, and `GET /search` answers with the
+nearest passages — the vector arm of the comparison. The baseline is in: **14 of 24 questions
+at k=10** under Amendment 1, 12 of 24 strict, with the receipt in `runs/`.
 
-What is not here is the number. The baseline run needs a real Vectorize index and a real
-ingest, and that has not happened yet; when it does, the receipt lands in `runs/`.
+M3 is the code that builds the graph and nothing that uses it: `scripts/extract.py` reads every
+chunk with Claude and records the entities and relations that chunk states,
+`scripts/build_graph.py` resolves those into one set of nodes and edges, and
+`scripts/load_graph.py` writes them into D1. None of it has been run against the real API yet,
+so there is no graph in the database and no second number to put beside the first.
 
 One result is in, though, and it comes before retrieval matters: all 45 gold passages survive
 chunking. `eval/coverage.py` checks that every quote the eval set asks for is still held whole
@@ -55,7 +59,10 @@ RECURSIVE` does or does not work on D1 (`test/recursive-cte.test.ts` records whi
 route answers, and `/search` returns what it promises — against the real local D1, with fakes
 standing in for the two bindings that have no simulator. Then the Python suites:
 `eval/test_validate.py` for the validator, `eval/test_scoring.py` for the containment rule,
-including the boundary at exactly half a quote.
+including the boundary at exactly half a quote, `scripts/test_extract.py` for the extractor —
+retries, truncation, resume and repair, with a scripted fake in place of the one function that
+touches the network — and `scripts/test_build_graph.py` for the entity resolution and its
+promise that the same extractions produce byte-identical bytes.
 
 ## Layout
 
@@ -67,6 +74,9 @@ including the boundary at exactly half a quote.
 | `migrations/` | D1 schema: documents, chunks, nodes, edges, node_chunks |
 | `scripts/chunk.py` | `corpus/text/` → `corpus/chunks.jsonl`. Deterministic: same corpus, same bytes |
 | `scripts/ingest.py` | Embeds, indexes and writes the rows over the REST API. Resumable, and it never prints a credential |
+| `scripts/extract.py` | One request per chunk to Claude, forced through a single tool, appended to `runs/tmp/extractions.jsonl`. Resumable, and it never prints the key |
+| `scripts/build_graph.py` | Those extractions → `corpus/graph.json`. The entity resolution, and the only place it lives. Deterministic |
+| `scripts/load_graph.py` | `corpus/graph.json` → D1's `nodes`, `edges` and `node_chunks`. Replaces the graph rather than duplicating it |
 | `eval/schema.md` | The format for `eval/questions.json` |
 | `eval/validate.py` | Checks that format, and that every gold quote is verbatim on the page it claims |
 | `eval/equivalents.json` | Amendment 1: the other passages that state a question's answer, scored as equally found |
@@ -94,6 +104,14 @@ CLOUDFLARE_API_TOKEN=...
 CLOUDFLARE_ACCOUNT_ID=...
 ```
 
+M3's extraction is the one step that spends Anthropic tokens rather than Cloudflare's. Its key
+lives on its own, in `.anthropic.env` (also ignored by git; `scripts/_anthropic.sh` is the only
+thing that reads it), because nothing that deploys code needs it:
+
+```sh
+ANTHROPIC_API_KEY=...
+```
+
 In order. The first three steps need no account at all:
 
 ```sh
@@ -108,9 +126,19 @@ python3 eval/coverage.py          # is every gold passage still held by a chunk?
 ./scripts/eval.sh                 # scores the frozen set, writes runs/<timestamp>-eval-vector.json
 ```
 
+Then M3, the graph. Only the last of the three touches Cloudflare:
+
+```sh
+./scripts/extract.sh              # every chunk through Claude. --dry-run first for the request sizes
+python3 scripts/build_graph.py    # extractions -> corpus/graph.json, and prints what merged into what
+./scripts/load-graph.sh           # the graph into D1's nodes, edges and node_chunks
+```
+
 `ingest.sh` is safe to interrupt and re-run: every write is an upsert, and the embeddings it
-has already paid for are cached under `runs/tmp/`. `eval.sh` wants `dev.sh` running in another
-terminal.
+has already paid for are cached under `runs/tmp/`. So is `extract.sh`: a chunk already in
+`runs/tmp/extractions.jsonl` is skipped, so a second run pays only for what the first did not
+reach. `./scripts/extract.sh --only <chunk id> --show` reads one chunk and prints what came
+back. `eval.sh` wants `dev.sh` running in another terminal.
 
 Embeddings come from `@cf/baai/bge-base-en-v1.5`: 768 dimensions, 512 input tokens, and
 `pooling: "cls"` — which has to be the same for documents and for queries, or the two live in
