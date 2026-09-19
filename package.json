@@ -15,7 +15,7 @@
     "test": "vitest run && npm run test:eval && npm run test:scripts",
     "test:worker": "vitest run",
     "test:eval": "python3 eval/test_validate.py && python3 eval/test_scoring.py",
-    "test:scripts": "python3 scripts/test_extract.py",
+    "test:scripts": "python3 scripts/test_extract.py && python3 scripts/test_build_graph.py",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
