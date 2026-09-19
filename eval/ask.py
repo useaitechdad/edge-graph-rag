@@ -51,6 +51,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--id", help="a question id from eval/questions.json")
     parser.add_argument("--base-url", default="http://127.0.0.1:8787")
     parser.add_argument("--k", type=int, default=10)
+    parser.add_argument(
+        "--retriever",
+        choices=("graph", "vector"),
+        default="graph",
+        help="retriever arm: graph (default) or vector",
+    )
     args = parser.parse_args(argv)
 
     gold: list[dict] = []
@@ -67,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(textwrap.fill(text, WIDTH))
     print()
-    response = search(args.base_url, text, args.k)
+    response = search(args.base_url, text, args.k, args.retriever)
     found_answer = False
     for rank, hit in enumerate(response["hits"], 1):
         label = label_for(hit["text"], gold, equivalents)

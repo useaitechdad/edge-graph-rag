@@ -77,8 +77,11 @@ def load_groups(questions: list[dict]) -> dict[str, str]:
     return groups
 
 
-def search(base_url: str, query: str, k: int) -> dict:
-    url = f"{base_url.rstrip('/')}/search?" + urllib.parse.urlencode({"q": query, "k": k})
+def search(base_url: str, query: str, k: int, retriever: str | None = None) -> dict:
+    params: dict[str, str | int] = {"q": query, "k": k}
+    if retriever:
+        params["retriever"] = retriever
+    url = f"{base_url.rstrip('/')}/search?" + urllib.parse.urlencode(params)
     try:
         with urllib.request.urlopen(url, timeout=TIMEOUT) as response:
             return json.loads(response.read().decode("utf-8"))
@@ -191,6 +194,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--base-url", default=BASE_URL, help=f"default {BASE_URL}")
     parser.add_argument("--k", type=int, default=PRIMARY_K, help=f"default {PRIMARY_K}")
+    parser.add_argument(
+        "--retriever",
+        choices=("graph", "vector"),
+        default="graph",
+        help="retriever arm to score: graph (default) or vector",
+    )
     parser.add_argument("--questions", type=Path, default=QUESTIONS)
     parser.add_argument("--equivalents", type=Path, default=scoring.EQUIVALENTS)
     args = parser.parse_args(argv)
@@ -203,7 +212,9 @@ def main(argv: list[str] | None = None) -> int:
         groups = load_groups(questions)
         equivalents = scoring.load_equivalents(args.equivalents)
 
-        print(f"{len(questions)} questions against {args.base_url}/search at k={args.k}")
+        print(
+            f"{len(questions)} questions against {args.base_url}/search ({args.retriever}) at k={args.k}"
+        )
         if equivalents:
             passages = sum(len(v) for v in equivalents.values())
             print(
@@ -211,9 +222,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"across {len(equivalents)} question(s)"
             )
         results: list[dict] = []
-        retriever = "unknown"
+        retriever = args.retriever
         for question in questions:
-            response = search(args.base_url, question["question"], args.k)
+            response = search(args.base_url, question["question"], args.k, args.retriever)
             retriever = response.get("retriever", retriever)
             results.append(
                 score_question(
@@ -234,8 +245,9 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print_table(results, groups, totals)
 
+    milestone = "M4" if retriever == "graph" else "M2"
     receipt = {
-        "milestone": "M2",
+        "milestone": milestone,
         "retriever": retriever,
         "base_url": args.base_url,
         "k": args.k,

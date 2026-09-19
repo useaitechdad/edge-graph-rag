@@ -7,7 +7,7 @@
  * `Retriever` beside this one, not as a rewrite of it.
  */
 
-import { VectorRetriever, type Retriever } from './retrieval';
+import { GraphRetriever, VectorRetriever, type Retriever } from './retrieval';
 
 export interface Env {
 	/** Chunks, nodes and edges. Local under `wrangler dev`. */
@@ -31,14 +31,19 @@ export default {
 			if (request.method !== 'GET') {
 				return json({ error: 'method not allowed' }, 405, { allow: 'GET' });
 			}
-			return json({ status: 'ok', service: 'edge-graph-rag', milestone: 'M2' });
+			return json({ status: 'ok', service: 'edge-graph-rag', milestone: 'M4' });
 		}
 
 		if (url.pathname === '/search') {
 			if (request.method !== 'GET') {
 				return json({ error: 'method not allowed' }, 405, { allow: 'GET' });
 			}
-			return search(url, new VectorRetriever(env.AI, env.VECTORS, env.DB));
+			const mode = url.searchParams.get('retriever');
+			const retriever =
+				mode === 'graph'
+					? new GraphRetriever(env.AI, env.VECTORS, env.DB)
+					: new VectorRetriever(env.AI, env.VECTORS, env.DB);
+			return search(url, retriever);
 		}
 
 		return json({ error: 'not found' }, 404);

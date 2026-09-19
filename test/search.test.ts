@@ -15,15 +15,21 @@ const VECTOR = Array.from({ length: DIMENSIONS }, () => 0.5);
 
 interface AiCall {
 	model: string;
-	input: { text: string | string[]; pooling?: string };
+	input: unknown;
 }
 
 function fakeAi(calls: AiCall[], fail?: Error) {
 	return {
-		async run(model: string, input: AiCall['input']) {
+		async run(model: string, input: any) {
 			calls.push({ model, input });
 			if (fail) {
 				throw fail;
+			}
+			if (model === '@cf/baai/bge-reranker-base') {
+				const contexts = (input as { contexts?: Array<{ text: string }> }).contexts ?? [];
+				return {
+					response: contexts.map((_, idx) => ({ id: idx, score: 0.95 - idx * 0.01 })),
+				};
 			}
 			return { shape: [1, DIMENSIONS], data: [VECTOR], pooling: input.pooling };
 		},
@@ -177,6 +183,29 @@ describe('GET /search', () => {
 		);
 		expect(response.status).toBe(200);
 		expect((await response.json()) as { hits: unknown[] }).toMatchObject({ hits: [] });
+	});
+
+	it('supports graph retriever and returns k hits with retriever: graph', async () => {
+		const calls: AiCall[] = [];
+		const ranked = CHUNK_IDS.map((id, i) => ({ id, score: 1 - i / 100 }));
+
+		const response = await get(
+			'https://example.com/search?q=who%20chaired%20the%20board&k=3&retriever=graph',
+			fakeAi(calls),
+			fakeIndex(ranked, { topK: [] }),
+		);
+
+		expect(response.status).toBe(200);
+		const body = (await response.json()) as {
+			query: string;
+			k: number;
+			retriever: string;
+			hits: Array<{ chunk_id: string; score: number }>;
+		};
+		expect(body.retriever).toBe('graph');
+		expect(body.k).toBe(3);
+		expect(body.hits).toHaveLength(3);
+		expect(body.hits[0].chunk_id).toBe('demo:0000');
 	});
 });
 

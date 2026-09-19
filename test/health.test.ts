@@ -9,7 +9,7 @@ describe('GET /health', () => {
 		expect(await response.json()).toEqual({
 			status: 'ok',
 			service: 'edge-graph-rag',
-			milestone: 'M2',
+			milestone: 'M4',
 		});
 	});
 
