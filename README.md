@@ -7,9 +7,17 @@ The corpus is a set of public-domain NASA mishap investigation reports. The ques
 asking about them cross documents — a contractor named in one report, a failure described in
 another — which is exactly where a single vector lookup tends to stay inside one report.
 
-**Status: M1.** The eval set is frozen: 24 questions in `eval/questions.json`, how they are
-scored in `eval/DESIGN.md`, and a per-question prediction in `eval/questions.notes.md`. There is
-still no retrieval code; that starts at M2, after this commit.
+**Status: M2, written but not yet run.** The corpus is cut into 1,373 chunks, there is an
+ingest that embeds them and fills Vectorize and D1, and `GET /search` answers with the nearest
+passages — the vector arm of the comparison. `eval/run.py` scores the frozen set against it.
+
+What is not here is the number. The baseline run needs a real Vectorize index and a real
+ingest, and that has not happened yet; when it does, the receipt lands in `runs/`.
+
+One result is in, though, and it comes before retrieval matters: all 45 gold passages survive
+chunking. `eval/coverage.py` checks that every quote the eval set asks for is still held whole
+by some chunk, because a recall number measured against chunks that lost the answer is a
+measurement of the chunker.
 
 ## Milestones
 
@@ -37,20 +45,31 @@ npm install
 npm test
 ```
 
-`npm test` is two suites: Vitest inside the Workers runtime (the migration applies, `WITH
-RECURSIVE` does or does not work on D1 — `test/recursive-cte.test.ts` records which, and the
-health route answers), and `python3 eval/test_validate.py`, the eval validator's own fixture
-tests.
+`npm test` is two halves. Vitest inside the Workers runtime: the migration applies, `WITH
+RECURSIVE` does or does not work on D1 (`test/recursive-cte.test.ts` records which), the health
+route answers, and `/search` returns what it promises — against the real local D1, with fakes
+standing in for the two bindings that have no simulator. Then the Python suites:
+`eval/test_validate.py` for the validator, `eval/test_scoring.py` for the containment rule,
+including the boundary at exactly half a quote.
 
 ## Layout
 
 | Path | What it is |
 |------|------------|
-| `src/index.ts` | The Worker. `GET /health`, and nothing else yet |
+| `src/index.ts` | The Worker. `GET /health` and `GET /search?q=…&k=10` |
+| `src/retrieval.ts` | The `Retriever` interface and the vector implementation. M4's graph retriever arrives beside it, not inside it |
+| `src/embed.ts` | The embedding model and its pooling, in one place, for the query side |
 | `migrations/` | D1 schema: documents, chunks, nodes, edges, node_chunks |
+| `scripts/chunk.py` | `corpus/text/` → `corpus/chunks.jsonl`. Deterministic: same corpus, same bytes |
+| `scripts/ingest.py` | Embeds, indexes and writes the rows over the REST API. Resumable, and it never prints a credential |
 | `eval/schema.md` | The format for `eval/questions.json` |
 | `eval/validate.py` | Checks that format, and that every gold quote is verbatim on the page it claims |
+| `eval/scoring.py` | The containment rule from `DESIGN.md`, implemented once and imported twice |
+| `eval/coverage.py` | Whether the chunks can still reach every gold passage. Run it before believing a recall number |
+| `eval/run.py` | The eval run: `/search` per question, recall at 10 and at 5, a receipt |
+| `eval/groups.json` | Which multi-hop questions have a specific final clause and which a generic one |
 | `corpus/MANIFEST.json` | The seven reports: official URL, sha256, rights note. The files themselves are downloaded by `scripts/fetch-corpus.py`, never redistributed from here |
+| `runs/` | One receipt per ingest and per eval run. `runs/tmp/` is scratch — progress and cached embeddings — and is ignored |
 | `scripts/` | Every operational step. Nothing in this project is hand-typed at a shell |
 | `wrangler.template.jsonc` | Committed. `wrangler.jsonc` is generated from it and ignored, so no account-specific id lands in git |
 
@@ -68,13 +87,24 @@ CLOUDFLARE_API_TOKEN=...
 CLOUDFLARE_ACCOUNT_ID=...
 ```
 
+In order. The first three steps need no account at all:
+
 ```sh
 python3 scripts/fetch-corpus.py   # downloads the reports from their official hosts, checks each sha256
+python3 scripts/chunk.py          # corpus/text/ -> corpus/chunks.jsonl, and prints the size spread
+python3 eval/coverage.py          # is every gold passage still held by a chunk?
+
 ./scripts/setup-cloudflare.sh     # creates the D1 database and the 768-dim cosine index, writes wrangler.jsonc
 ./scripts/migrate-remote.sh
-./scripts/dev.sh
+./scripts/ingest.sh               # embeds, indexes, writes the rows. --dry-run first if you want the sizes
+./scripts/dev.sh                  # serves /search on 127.0.0.1:8787
+./scripts/eval.sh                 # scores the frozen set, writes runs/<timestamp>-eval-vector.json
 ```
+
+`ingest.sh` is safe to interrupt and re-run: every write is an upsert, and the embeddings it
+has already paid for are cached under `runs/tmp/`. `eval.sh` wants `dev.sh` running in another
+terminal.
 
 Embeddings come from `@cf/baai/bge-base-en-v1.5`: 768 dimensions, 512 input tokens, and
 `pooling: "cls"` — which has to be the same for documents and for queries, or the two live in
-different spaces.
+different spaces. `src/embed.ts` and `scripts/ingest.py` are the two places that say so.
