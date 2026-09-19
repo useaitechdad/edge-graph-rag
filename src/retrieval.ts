@@ -154,11 +154,14 @@ export class GraphRetriever implements Retriever {
 			walk(node_id, hop) AS (
 				SELECT id, hop FROM seed_nodes
 				UNION
-				SELECT 
-					CASE WHEN e.source = walk.node_id THEN e.target ELSE e.source END,
-					walk.hop + 1
+				SELECT e.target, walk.hop + 1
 				FROM edges e
-				JOIN walk ON (e.source = walk.node_id OR e.target = walk.node_id)
+				JOIN walk ON e.source = walk.node_id
+				WHERE walk.hop < 2
+				UNION
+				SELECT e.source, walk.hop + 1
+				FROM edges e
+				JOIN walk ON e.target = walk.node_id
 				WHERE walk.hop < 2
 			),
 			min_walk AS (
