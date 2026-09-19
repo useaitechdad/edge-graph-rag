@@ -5,6 +5,7 @@ wrangler.jsonc
 .dev.vars
 # Deploy credentials, read only by scripts/_auth.sh.
 .cloudflare.env
+.anthropic.env
 .env
 .env.*
 # The reports are downloaded from their official hosts by scripts/fetch-corpus.py
