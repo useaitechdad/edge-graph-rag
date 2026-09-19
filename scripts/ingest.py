@@ -174,6 +174,8 @@ class Cloudflare:
         self.secrets = [token, account]
         self.statuses: Counter[str] = Counter()
         self.usage_headers: dict[str, str] = {}
+        self.neurons = 0.0
+        self.neuron_requests = 0
         self.unexpected_fields: set[str] = set()
 
     def _post(self, path: str, body: bytes, content_type: str, label: str) -> dict:
@@ -212,6 +214,15 @@ class Cloudflare:
             lowered = name.lower()
             if lowered.startswith(USAGE_HEADER_PREFIXES):
                 self.usage_headers[lowered] = value
+            # The first real run showed Workers AI does price each request, in a
+            # `cf-ai-neurons` header. The dict above keeps only the last value, so
+            # the total is summed here.
+            if lowered == "cf-ai-neurons":
+                try:
+                    self.neurons += float(value)
+                    self.neuron_requests += 1
+                except ValueError:
+                    pass
 
     def _remember_fields(self, payload: dict) -> None:
         self.unexpected_fields.update(set(payload) - KNOWN_ENVELOPE_KEYS)
@@ -498,13 +509,14 @@ def write_receipt(
             "estimated_input_tokens": round(characters / 4),
             "estimate_basis": "characters / 4; there is no tokenizer offline, so this "
             "is an estimate and not a billed figure",
+            "neurons_billed_this_run": round(api.neurons, 2),
+            "requests_carrying_a_neuron_header": api.neuron_requests,
             "usage_headers_seen": api.usage_headers,
             "unexpected_response_fields": sorted(api.unexpected_fields),
-            "note": "Workers AI reports token usage only on text-generation responses; "
-            "the embeddings response carries {data, shape} and no usage object, and no "
-            "neuron or rate-limit header was observed. If usage_headers_seen and "
-            "unexpected_response_fields are both empty, the API returned nothing usable "
-            "for measuring Neuron cost and the estimate above is all there is.",
+            "note": "Workers AI prices each request in a cf-ai-neurons response header; "
+            "neurons_billed_this_run is the sum over this run, and is 0 when every "
+            "embedding came from the local cache. usage_headers_seen keeps the last "
+            "value of each usage header as observed.",
         },
     }
     RUNS.mkdir(parents=True, exist_ok=True)

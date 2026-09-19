@@ -1,0 +1,43 @@
+{
+	"milestone": "M2",
+	"started_utc": "2026-09-19T04:50:55+00:00",
+	"finished_utc": "2026-09-19T04:51:41+00:00",
+	"wall_seconds": 45.8,
+	"dry_run": false,
+	"model": "@cf/baai/bge-base-en-v1.5",
+	"pooling": "cls",
+	"dimensions": 768,
+	"index": "edge-graph-rag-chunks",
+	"counts": {
+		"chunks": 1373,
+		"documents": 7,
+		"d1_chunk_rows_written": 1373,
+		"vectors_upserted": 1373,
+		"chunks_embedded_this_run": 1373,
+		"embeddings_reused_from_cache": 0
+	},
+	"batch_sizes": {
+		"embed": 50,
+		"vectorize_upsert": 1000,
+		"d1_chunk_rows_per_statement": 16,
+		"d1_document_rows_per_statement": 20
+	},
+	"http_status_counts": {
+		"d1-query 200": 87,
+		"vectorize-upsert 200": 2,
+		"workers-ai 200": 28
+	},
+	"cost": {
+		"input_characters": 1767648,
+		"estimated_input_tokens": 441912,
+		"estimate_basis": "characters / 4; there is no tokenizer offline, so this is an estimate and not a billed figure",
+		"usage_headers_seen": {
+			"cf-ai-neurons": "49.32",
+			"cf-ai-req-id": "<redacted>"
+		},
+		"unexpected_response_fields": [
+			"result.usage"
+		],
+		"note": "Workers AI reports token usage only on text-generation responses; the embeddings response carries {data, shape} and no usage object, and no neuron or rate-limit header was observed. If usage_headers_seen and unexpected_response_fields are both empty, the API returned nothing usable for measuring Neuron cost and the estimate above is all there is."
+	}
+}
