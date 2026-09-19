@@ -6,9 +6,13 @@ chunker drops a page, mangles a line join or cuts a quote so badly that no singl
 chunk holds half of it, recall is capped before retrieval has done anything — and
 the run would look like a retrieval result instead of a bug.
 
-So, for every gold passage in `eval/questions.json`, this asks whether at least
-one chunk contains it under the rule in `eval/scoring.py`. A passage no chunk can
-hold is a finding to report, not a reason to edit the questions.
+So, for every gold passage in `eval/questions.json` — and every equivalent answer
+passage in `eval/equivalents.json`, which Amendment 1 lets a question be found on
+— this asks whether at least one chunk contains it under the rule in
+`eval/scoring.py`. A passage no chunk can hold is a finding to report, not a
+reason to edit the questions. An equivalent no chunk can hold is worse than
+useless: it would be an answer the amendment says counts and retrieval could
+never reach.
 
 Only chunks that actually cover the passage's page are considered: a chunk's text
 comes from its own pages and nowhere else, so a chunk whose page span excludes
@@ -54,6 +58,7 @@ def candidates(chunks: list[dict], doc: str, page: int) -> list[dict]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--questions", type=Path, default=QUESTIONS)
+    parser.add_argument("--equivalents", type=Path, default=scoring.EQUIVALENTS)
     parser.add_argument("--chunks", type=Path, default=CHUNKS)
     parser.add_argument(
         "--verbose",
@@ -65,17 +70,25 @@ def main(argv: list[str] | None = None) -> int:
     try:
         questions = json.loads(args.questions.read_text(encoding="utf-8"))
         chunks = load_chunks(args.chunks)
+        equivalents = scoring.load_equivalents(args.equivalents)
     except OSError as exc:
         print(f"could not read: {exc}. Run python3 scripts/chunk.py first.", file=sys.stderr)
+        return 2
+    except ValueError as exc:
+        print(f"{exc}", file=sys.stderr)
         return 2
 
     total = 0
     misses: list[str] = []
-    print(f"{len(chunks)} chunks, {len(questions)} questions")
+    passages = sum(len(items) for items in equivalents.values())
+    print(f"{len(chunks)} chunks, {len(questions)} questions, {passages} equivalent passage(s)")
     print()
 
     for question in questions:
-        for passage in question["gold"]:
+        # Amendment 1's passages are answers too, and are checked the same way.
+        roles = [(passage["role"], passage) for passage in question["gold"]]
+        roles += [("equiv", passage) for passage in equivalents.get(question["id"], [])]
+        for role, passage in roles:
             total += 1
             pool = candidates(chunks, passage["doc"], passage["page"])
             best = max(
@@ -84,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
             fraction, chunk_id = best
             covered = any(scoring.contains(passage["quote"], chunk["text"]) for chunk in pool)
             line = (
-                f"{'ok ' if covered else 'MISS'} {question['id']:<5} {passage['role']:<6} "
+                f"{'ok ' if covered else 'MISS'} {question['id']:<5} {role:<6} "
                 f"{passage['doc']}:{passage['page']:<4} best {fraction:6.1%} in {chunk_id} "
                 f"({len(pool)} chunk(s) on that page)"
             )
@@ -94,13 +107,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(line)
                 misses.append(
-                    f"{question['id']} ({passage['role']}) "
+                    f"{question['id']} ({role}) "
                     f"{passage['doc']} p{passage['page']}: best {fraction:.1%}"
                 )
 
     covered_count = total - len(misses)
     print()
-    print(f"{covered_count}/{total} gold passages are held by at least one chunk")
+    print(f"{covered_count}/{total} gold and equivalent passages are held by at least one chunk")
     if misses:
         print("\nNot reachable — a chunker bug or a finding, never a reason to edit a question:")
         for miss in misses:

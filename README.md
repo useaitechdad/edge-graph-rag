@@ -35,6 +35,11 @@ M1 comes before M2 on purpose. Questions written after the search works measure 
 not the retrieval; freezing them first, in a commit that predates the retrieval code, is what
 makes the final number worth reading.
 
+Amendment 1 adds `eval/equivalents.json` — the other places these reports state the same
+answer, so a retriever that returns one of them is not counted as a miss; `questions.json`
+stays frozen byte for byte, and every run reports the strict number beside the amended one
+(see `eval/DESIGN.md`).
+
 ## Running the tests
 
 Everything here runs offline, against the local D1 simulator. No Cloudflare account, no keys.
@@ -64,6 +69,8 @@ including the boundary at exactly half a quote.
 | `scripts/ingest.py` | Embeds, indexes and writes the rows over the REST API. Resumable, and it never prints a credential |
 | `eval/schema.md` | The format for `eval/questions.json` |
 | `eval/validate.py` | Checks that format, and that every gold quote is verbatim on the page it claims |
+| `eval/equivalents.json` | Amendment 1: the other passages that state a question's answer, scored as equally found |
+| `eval/equivalents.notes.md` | How each equivalent was found — the answer, the search terms, what was accepted and what was rejected |
 | `eval/scoring.py` | The containment rule from `DESIGN.md`, implemented once and imported twice |
 | `eval/coverage.py` | Whether the chunks can still reach every gold passage. Run it before believing a recall number |
 | `eval/run.py` | The eval run: `/search` per question, recall at 10 and at 5, a receipt |

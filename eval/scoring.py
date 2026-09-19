@@ -20,18 +20,26 @@ Whitespace normalisation is `validate.py`'s, imported rather than repeated: the
 same collapse that lets a gold quote match a hard-wrapped PDF extract has to be
 the one used here, or a quote could validate and then score as absent.
 
+Amendment 1 (eval/DESIGN.md) adds a second set of quotes per question — the other
+places the reports state the same answer. Loading them lives here for the same
+reason `contains` does: `coverage.py` and `run.py` have to be asking about the
+same passages, or coverage would vouch for a list recall never scores.
+
 Standard library only.
 """
 
 from __future__ import annotations
 
+import json
 import sys
 from difflib import SequenceMatcher
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from validate import normalise  # noqa: E402
+from validate import AMENDMENT, normalise  # noqa: E402
+
+EQUIVALENTS = Path(__file__).resolve().parent / "equivalents.json"
 
 # eval/DESIGN.md: "at least half". Compared as an integer ratio below, so a quote
 # of odd length has no rounding to argue about.
@@ -82,3 +90,29 @@ def rank_of_first(quote: str, chunks: list[str]) -> int | None:
         if contains(quote, chunk):
             return position
     return None
+
+
+def best_rank(quotes: list[str], chunks: list[str]) -> int | None:
+    """The best rank any of these quotes earned, or None if none was reached.
+
+    Reaching any passage that states the answer is reaching the answer, so the
+    rank of a question is the earliest chunk that holds one of them.
+    """
+    ranks = [rank for rank in (rank_of_first(quote, chunks) for quote in quotes) if rank is not None]
+    return min(ranks) if ranks else None
+
+
+def load_equivalents(path: Path = EQUIVALENTS) -> dict[str, list[dict]]:
+    """Amendment 1's passages: question id -> [{doc, page, quote}, ...].
+
+    An absent file is not an error. It means this checkout is the frozen set as
+    it was, and everything then scores strictly — which is the number the amended
+    one is always reported beside anyway.
+    """
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except OSError:
+        return {}
+    if payload.get("amendment") != AMENDMENT:
+        raise ValueError(f"{path}: amendment {payload.get('amendment')!r}, expected {AMENDMENT}")
+    return payload["passages"]

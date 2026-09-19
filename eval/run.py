@@ -8,6 +8,13 @@ three groups it is reported in, and `eval/scoring.py` is the only implementation
 of "contains" — the same one `eval/coverage.py` uses, so a passage cannot be
 reachable by one definition and missing by another.
 
+Every question is scored twice more: **strict**, the rule as frozen, where only
+the question's own gold answer passage counts, and **amended**, where any passage
+in `eval/equivalents.json` counts too (Amendment 1 in eval/DESIGN.md — the reports
+state the same fact in more than one place). Both numbers go in the receipt, and
+each question records whether its hit landed on the `gold` passage or on an
+`equivalent`. Both retrievers are scored the same way.
+
 Bridge passages are recorded in the receipt and not scored. That is DESIGN.md's
 rule: they say what path a reader needs, not what retrieval is judged on.
 
@@ -83,26 +90,48 @@ def search(base_url: str, query: str, k: int) -> dict:
         ) from None
 
 
-def score_question(question: dict, hits: list[dict], k: int) -> dict:
+def score_question(question: dict, equivalents: list[dict], hits: list[dict], k: int) -> dict:
     """Answer-passage recall for one question, off one ranked list.
 
-    Every question in the frozen set has exactly one 'answer' passage; if one
-    ever had two, reaching either counts, and the rank reported is the better.
+    Scored twice from the same hits. `strict_rank` is the rule as frozen: the
+    question's own gold answer passage and nothing else. `rank` is the amended
+    rule: that passage or any equivalent, whichever a chunk reached first. When
+    both land, the gold passage takes the credit — an equivalent is only ever
+    reported as the hit when it is the only thing that was found, or found first.
     """
     texts = [hit["text"] for hit in hits]
-    answers = [gold for gold in question["gold"] if gold["role"] == "answer"]
-    ranks = [scoring.rank_of_first(gold["quote"], texts) for gold in answers]
-    found = [rank for rank in ranks if rank is not None]
-    rank = min(found) if found else None
+    golds = [gold["quote"] for gold in question["gold"] if gold["role"] == "answer"]
+    others = [passage["quote"] for passage in equivalents]
+
+    strict_rank = scoring.best_rank(golds, texts)
+    equivalent_rank = scoring.best_rank(others, texts)
+    ranks = [rank for rank in (strict_rank, equivalent_rank) if rank is not None]
+    rank = min(ranks) if ranks else None
+
+    if strict_rank is not None and (equivalent_rank is None or strict_rank <= equivalent_rank):
+        hit_on = "gold"
+    elif equivalent_rank is not None:
+        hit_on = "equivalent"
+    else:
+        hit_on = None
 
     return {
         "id": question["id"],
         "kind": question["kind"],
         "rank": rank,
+        "hit_on": hit_on,
+        "equivalents": len(others),
         "found_at_5": rank is not None and rank <= SECONDARY_K,
         "found_at_10": rank is not None and rank <= k,
+        "strict_rank": strict_rank,
+        "strict_found_at_5": strict_rank is not None and strict_rank <= SECONDARY_K,
+        "strict_found_at_10": strict_rank is not None and strict_rank <= k,
+        "equivalent_rank": equivalent_rank,
         "hits_returned": len(hits),
         "documents_returned": sorted({hit["document"] for hit in hits}),
+        # The ranked list itself, so a receipt can be re-scored later without
+        # another run: chunk ids plus corpus/chunks.jsonl is the text back.
+        "chunk_ids": [hit.get("chunk_id") for hit in hits],
         # Reported, never scored — DESIGN.md.
         "bridge_ranks": {
             f"{gold['doc']}:{gold['page']}": scoring.rank_of_first(gold["quote"], texts)
@@ -113,37 +142,49 @@ def score_question(question: dict, hits: list[dict], k: int) -> dict:
 
 
 def tally(results: list[dict], groups: dict[str, str]) -> dict:
-    totals: dict[str, dict[str, int]] = {
-        name: {"questions": 0, "found_at_5": 0, "found_at_10": 0}
-        for name in (*GROUP_ORDER, "overall")
+    """Both numbers, per group: strict is the rule as frozen, amended counts the
+    equivalent answer passages as well."""
+    rules = {"strict": "strict_found_at_", "amended": "found_at_"}
+    totals: dict[str, dict[str, dict[str, int]]] = {
+        rule: {
+            name: {"questions": 0, "found_at_5": 0, "found_at_10": 0}
+            for name in (*GROUP_ORDER, "overall")
+        }
+        for rule in rules
     }
     for result in results:
-        for name in (groups[result["id"]], "overall"):
-            totals[name]["questions"] += 1
-            totals[name]["found_at_5"] += int(result["found_at_5"])
-            totals[name]["found_at_10"] += int(result["found_at_10"])
+        for rule, prefix in rules.items():
+            for name in (groups[result["id"]], "overall"):
+                totals[rule][name]["questions"] += 1
+                totals[rule][name]["found_at_5"] += int(result[f"{prefix}5"])
+                totals[rule][name]["found_at_10"] += int(result[f"{prefix}10"])
     return totals
 
 
 def print_table(results: list[dict], groups: dict[str, str], totals: dict) -> None:
-    print(f"{'id':<5} {'group':<15} {'@5':>4} {'@10':>4} {'rank':>5}")
-    print("-" * 37)
+    print(f"{'id':<5} {'group':<15} {'@5':>4} {'@10':>4} {'rank':>5} {'hit':>11}")
+    print("-" * 49)
     for result in results:
         rank = "-" if result["rank"] is None else str(result["rank"])
         print(
             f"{result['id']:<5} {groups[result['id']]:<15} "
             f"{'yes' if result['found_at_5'] else 'no':>4} "
-            f"{'yes' if result['found_at_10'] else 'no':>4} {rank:>5}"
+            f"{'yes' if result['found_at_10'] else 'no':>4} {rank:>5} "
+            f"{result['hit_on'] or '-':>11}"
         )
-    print("-" * 37)
-    print(f"{'':<5} {'group':<15} {'@5':>9} {'@10':>9}")
+    print("-" * 49)
+    print(f"{'':<5} {'group':<15} {'strict @5':>11} {'@10':>5} {'amended @5':>12} {'@10':>5}")
     for name in (*GROUP_ORDER, "overall"):
-        row = totals[name]
-        if not row["questions"]:
+        strict, amended = totals["strict"][name], totals["amended"][name]
+        if not strict["questions"]:
             continue
-        at5 = f"{row['found_at_5']}/{row['questions']}"
-        at10 = f"{row['found_at_10']}/{row['questions']}"
-        print(f"{'':<5} {name:<15} {at5:>9} {at10:>9}")
+        cells = (
+            f"{strict['found_at_5']}/{strict['questions']}",
+            f"{strict['found_at_10']}/{strict['questions']}",
+            f"{amended['found_at_5']}/{amended['questions']}",
+            f"{amended['found_at_10']}/{amended['questions']}",
+        )
+        print(f"{'':<5} {name:<15} {cells[0]:>11} {cells[1]:>5} {cells[2]:>12} {cells[3]:>5}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -151,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base-url", default=BASE_URL, help=f"default {BASE_URL}")
     parser.add_argument("--k", type=int, default=PRIMARY_K, help=f"default {PRIMARY_K}")
     parser.add_argument("--questions", type=Path, default=QUESTIONS)
+    parser.add_argument("--equivalents", type=Path, default=scoring.EQUIVALENTS)
     args = parser.parse_args(argv)
 
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -159,15 +201,29 @@ def main(argv: list[str] | None = None) -> int:
     try:
         questions = json.loads(args.questions.read_text(encoding="utf-8"))
         groups = load_groups(questions)
+        equivalents = scoring.load_equivalents(args.equivalents)
 
         print(f"{len(questions)} questions against {args.base_url}/search at k={args.k}")
+        if equivalents:
+            passages = sum(len(v) for v in equivalents.values())
+            print(
+                f"amendment {scoring.AMENDMENT}: {passages} equivalent answer passage(s) "
+                f"across {len(equivalents)} question(s)"
+            )
         results: list[dict] = []
         retriever = "unknown"
         for question in questions:
             response = search(args.base_url, question["question"], args.k)
             retriever = response.get("retriever", retriever)
-            results.append(score_question(question, response.get("hits", []), args.k))
-    except (EvalError, OSError) as exc:
+            results.append(
+                score_question(
+                    question,
+                    equivalents.get(question["id"], []),
+                    response.get("hits", []),
+                    args.k,
+                )
+            )
+    except (EvalError, OSError, ValueError) as exc:
         print(f"\nFAILED: {exc}", file=sys.stderr)
         return 2
     except json.JSONDecodeError as exc:
@@ -189,6 +245,12 @@ def main(argv: list[str] | None = None) -> int:
         "metric": "answer-passage recall at k; a chunk contains a passage when it "
         "holds at least half of the quote's characters, whitespace-normalised and "
         "contiguous (eval/DESIGN.md, implemented in eval/scoring.py)",
+        "amendment": scoring.AMENDMENT,
+        "scoring_rules": {
+            "strict": "the rule as frozen: only the question's own gold answer passage counts",
+            "amended": "the gold answer passage or any passage in eval/equivalents.json",
+        },
+        "equivalents_used": sum(len(passages) for passages in equivalents.values()),
         "totals": totals,
         "questions": results,
     }

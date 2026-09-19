@@ -119,5 +119,36 @@ class Ranking(unittest.TestCase):
         self.assertTrue(rank <= 10)
 
 
+class EquivalentPassages(unittest.TestCase):
+    """Amendment 1: reaching any passage that states the answer is reaching it."""
+
+    OTHER = (
+        "The appendix states the same finding in different words, reporting impulse "
+        "in pound-seconds where newton-seconds were specified throughout"
+    )
+
+    def test_the_best_of_several_quotes_wins(self):
+        hits = [FILLER, self.OTHER, QUOTE]
+        self.assertEqual(scoring.best_rank([QUOTE, self.OTHER], hits), 2)
+
+    def test_one_quote_behaves_like_rank_of_first(self):
+        hits = [FILLER, QUOTE]
+        self.assertEqual(scoring.best_rank([QUOTE], hits), scoring.rank_of_first(QUOTE, hits))
+
+    def test_no_quote_reached_is_none(self):
+        self.assertIsNone(scoring.best_rank([QUOTE, self.OTHER], [FILLER, FILLER]))
+
+    def test_no_quotes_at_all_is_none(self):
+        # A question with no equivalents scores strictly, and says so quietly.
+        self.assertIsNone(scoring.best_rank([], [QUOTE]))
+
+    def test_an_absent_amendment_file_is_not_an_error(self):
+        self.assertEqual(scoring.load_equivalents(Path("no", "such", "file.json")), {})
+
+    def test_the_repository_amendment_loads(self):
+        loaded = scoring.load_equivalents()
+        self.assertTrue(all(isinstance(quotes, list) for quotes in loaded.values()))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
