@@ -11,6 +11,8 @@ wrangler.jsonc
 # and never redistributed from here; MANIFEST.json pins each one by sha256.
 corpus/raw/
 corpus/text/
+# Rebuilt from corpus/text/ by scripts/chunk.py, deterministically.
+corpus/chunks.jsonl
 runs/tmp/
 .DS_Store
 __pycache__/
