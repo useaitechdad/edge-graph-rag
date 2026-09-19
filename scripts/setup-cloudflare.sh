@@ -14,29 +14,36 @@ METRIC="cosine"
 . scripts/_auth.sh
 require_cloudflare_auth
 
-echo "==> D1 database: ${DB_NAME}"
-if npx wrangler d1 info "${DB_NAME}" --json >/dev/null 2>&1; then
-	echo "    already exists, leaving it alone"
-else
-	npx wrangler d1 create "${DB_NAME}"
-fi
-
-# The id is account-specific, which is exactly why wrangler.jsonc is generated
-# rather than committed.
-DB_ID="$(
-	npx wrangler d1 info "${DB_NAME}" --json | node -e '
+# The database is looked up in `d1 list`, not `d1 info`: on a fresh account
+# `d1 info <name>` answered 7404 "could not be found" for a database that
+# `d1 list` showed and `d1 create` had just made.
+d1_id() {
+	npx wrangler d1 list --json | DB_NAME="${DB_NAME}" node -e '
 		let raw = "";
 		process.stdin.on("data", (d) => (raw += d));
 		process.stdin.on("end", () => {
-			const start = raw.indexOf("{");
-			if (start === -1) { console.error("wrangler d1 info returned no JSON"); process.exit(1); }
-			const info = JSON.parse(raw.slice(start));
-			const id = info.uuid ?? info.database_id ?? info.id;
-			if (!id) { console.error("no database id in: " + Object.keys(info).join(", ")); process.exit(1); }
-			process.stdout.write(String(id));
+			const start = raw.indexOf("[");
+			if (start === -1) { console.error("wrangler d1 list returned no JSON"); process.exit(1); }
+			const db = JSON.parse(raw.slice(start)).find((d) => d.name === process.env.DB_NAME);
+			process.stdout.write(db ? String(db.uuid ?? db.database_id ?? db.id) : "");
 		});
 	'
-)"
+}
+
+echo "==> D1 database: ${DB_NAME}"
+# The id is account-specific, which is exactly why wrangler.jsonc is generated
+# rather than committed.
+DB_ID="$(d1_id)"
+if [[ -n "${DB_ID}" ]]; then
+	echo "    already exists, leaving it alone"
+else
+	npx wrangler d1 create "${DB_NAME}"
+	DB_ID="$(d1_id)"
+fi
+if [[ -z "${DB_ID}" ]]; then
+	echo "Could not find ${DB_NAME} in wrangler d1 list." >&2
+	exit 1
+fi
 
 echo "==> Vectorize index: ${INDEX_NAME} (${DIMENSIONS} dims, ${METRIC})"
 if npx wrangler vectorize get "${INDEX_NAME}" >/dev/null 2>&1; then
