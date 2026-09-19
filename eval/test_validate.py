@@ -18,7 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import validate  # noqa: E402
 
-# A two-page document, wrapped the way a PDF text extract wraps it.
+# A three-page document, wrapped the way a PDF text extract wraps it. Page 3 says
+# the same thing page 1 does, twice, which is what the equivalents file is for.
 DOC = (
     "\f--- page 1 ---\n"
     "The spacecraft navigation team supplied thrust values in pound-seconds\n"
@@ -28,6 +29,23 @@ DOC = (
     "The review board found the same contractor had built the earlier lander,\n"
     "whose touchdown sensor was triggered by leg deployment rather than by the\n"
     "surface, ending the descent early.\n"
+    "\f--- page 3 ---\n"
+    "The appendix repeats that the navigation team reported thrust in\n"
+    "pound-seconds where the specification called for newton-seconds.\n"
+    "\n"
+    "A later paragraph on the same page states once more that the thrust\n"
+    "figures reached the ground software in the wrong units entirely.\n"
+)
+
+# The reprint pages of this document are not indexed, so nothing may be quoted
+# from them — see eval/DESIGN.md and scripts/chunk.py.
+REPRINT = (
+    "\f--- page 57 ---\n"
+    "This page is part of the report proper and is indexed like any other page\n"
+    "in it, which is what makes page 60 below the interesting case.\n"
+    "\f--- page 60 ---\n"
+    "The reprint restates that the navigation team supplied thrust values in\n"
+    "pound-seconds while the ground software expected newton-seconds.\n"
 )
 
 # 80-400 characters once whitespace is normalised, and written as one line to
@@ -40,6 +58,25 @@ QUOTE_P2 = (
     "The review board found the same contractor had built the earlier lander, whose "
     "touchdown sensor was triggered by leg deployment"
 )
+# Page 3's two paragraphs: each says what page 1 says, and they do not overlap.
+QUOTE_P3A = (
+    "The appendix repeats that the navigation team reported thrust in pound-seconds "
+    "where the specification called for newton-seconds."
+)
+QUOTE_P3B = (
+    "A later paragraph on the same page states once more that the thrust figures "
+    "reached the ground software in the wrong units entirely."
+)
+# Starts inside QUOTE_P3A and runs past it: the same passage read twice.
+QUOTE_P3_OVERLAPPING = (
+    "the navigation team reported thrust in pound-seconds where the specification "
+    "called for newton-seconds. A later paragraph on the same page states once more"
+)
+QUOTE_REPRINT = (
+    "The reprint restates that the navigation team supplied thrust values in "
+    "pound-seconds while the ground software expected newton-seconds."
+)
+REPRINT_SLUG = "mco-mib-project-management"
 
 
 def single_hop(**overrides: object) -> dict:
@@ -70,16 +107,34 @@ def multi_hop(**overrides: object) -> dict:
     return question
 
 
-class ValidatorTest(unittest.TestCase):
+def equivalent(**overrides: object) -> dict:
+    passage = {"doc": "report", "page": 3, "quote": QUOTE_P3A}
+    passage.update(overrides)
+    return passage
+
+
+class Fixture(unittest.TestCase):
+    """The corpus both suites check against: a report, and the document whose
+    reprint pages are not indexed."""
+
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name)
         self.corpus = root / "text"
         self.corpus.mkdir()
         (self.corpus / "report.txt").write_text(DOC, encoding="utf-8")
+        (self.corpus / f"{REPRINT_SLUG}.txt").write_text(REPRINT, encoding="utf-8")
+        (root / "MANIFEST.json").write_text(
+            json.dumps({"documents": [{"slug": "report"}, {"slug": REPRINT_SLUG}]}),
+            encoding="utf-8",
+        )
+        self.manifest_path = root / "MANIFEST.json"
         self.questions_path = root / "questions.json"
+        self.equivalents_path = root / "equivalents.json"
         self.addCleanup(self.tmp.cleanup)
 
+
+class ValidatorTest(Fixture):
     def run_on(self, questions: list) -> list[str]:
         self.questions_path.write_text(json.dumps(questions), encoding="utf-8")
         errors, _ = validate.validate(self.questions_path, self.corpus)
@@ -199,6 +254,150 @@ class ValidatorTest(unittest.TestCase):
     def test_bad_role(self):
         wrong = single_hop(gold=[{"doc": "report", "role": "proof", "page": 1, "quote": QUOTE_P1}])
         self.assert_fails_with([wrong], "'role' must be one of")
+
+
+class EquivalentsTest(Fixture):
+    """Amendment 1: eval/equivalents.json, checked against the set it amends."""
+
+    def run_on(self, passages: dict, questions: list | None = None, amendment: int = 1) -> list[str]:
+        questions = [single_hop(), multi_hop()] if questions is None else questions
+        self.questions_path.write_text(json.dumps(questions), encoding="utf-8")
+        self.equivalents_path.write_text(
+            json.dumps({"amendment": amendment, "passages": passages}), encoding="utf-8"
+        )
+        errors, _, _ = validate.validate_both(
+            self.questions_path, self.corpus, self.equivalents_path, self.manifest_path
+        )
+        return errors
+
+    def assert_fails_with(self, passages: dict, fragment: str, **kwargs: object) -> None:
+        errors = self.run_on(passages, **kwargs)
+        self.assertTrue(errors, f"expected a failure mentioning {fragment!r}, got none")
+        self.assertTrue(
+            any(fragment in error for error in errors),
+            f"expected {fragment!r} in {errors}",
+        )
+
+    def test_a_good_amendment_passes(self) -> None:
+        self.assertEqual(self.run_on({"sh-1": [equivalent()]}), [])
+
+    def test_two_equivalents_on_one_page_are_fine_when_they_are_different_passages(self) -> None:
+        self.assertEqual(
+            self.run_on({"sh-1": [equivalent(), equivalent(quote=QUOTE_P3B)]}), []
+        )
+
+    def test_no_file_is_not_a_failure(self) -> None:
+        # A checkout without the amendment is the frozen set as it was.
+        self.questions_path.write_text(json.dumps([single_hop()]), encoding="utf-8")
+        errors, count, passages = validate.validate_both(
+            self.questions_path, self.corpus, self.equivalents_path, self.manifest_path
+        )
+        self.assertEqual((errors, count, passages), ([], 1, None))
+
+    def test_counts_the_passages_it_checked(self) -> None:
+        self.questions_path.write_text(json.dumps([single_hop()]), encoding="utf-8")
+        self.equivalents_path.write_text(
+            json.dumps({"amendment": 1, "passages": {"sh-1": [equivalent(), equivalent(quote=QUOTE_P3B)]}}),
+            encoding="utf-8",
+        )
+        _, _, passages = validate.validate_both(
+            self.questions_path, self.corpus, self.equivalents_path, self.manifest_path
+        )
+        self.assertEqual(passages, 2)
+
+    def test_quote_not_on_the_page(self) -> None:
+        self.assert_fails_with({"sh-1": [equivalent(page=2)]}, "not verbatim")
+
+    def test_quote_too_short(self) -> None:
+        self.assert_fails_with({"sh-1": [equivalent(quote="The appendix repeats")]}, "outside")
+
+    def test_unknown_question_id(self) -> None:
+        self.assert_fails_with({"nope": [equivalent()]}, "no question has that id")
+
+    def test_document_not_in_the_manifest(self) -> None:
+        # On disk, but not one of the seven the corpus manifest lists.
+        (self.corpus / "stray.txt").write_text(DOC, encoding="utf-8")
+        self.assert_fails_with(
+            {"sh-1": [equivalent(doc="stray")]}, "not a document in the corpus manifest"
+        )
+
+    def test_page_that_is_not_indexed(self) -> None:
+        self.assert_fails_with(
+            {"sh-1": [{"doc": REPRINT_SLUG, "page": 60, "quote": QUOTE_REPRINT}]},
+            "is not indexed",
+        )
+
+    def test_an_indexed_page_of_the_same_document_is_fine(self) -> None:
+        self.assertEqual(
+            self.run_on(
+                {
+                    "sh-1": [
+                        {
+                            "doc": REPRINT_SLUG,
+                            "page": 57,
+                            "quote": "This page is part of the report proper and is indexed "
+                            "like any other page in it, which is what makes page 60 below "
+                            "the interesting case.",
+                        }
+                    ]
+                }
+            ),
+            [],
+        )
+
+    def test_restating_the_questions_own_gold_answer(self) -> None:
+        self.assert_fails_with(
+            {"sh-1": [equivalent(page=1, quote=QUOTE_P1)]}, "restates the question's own gold"
+        )
+
+    def test_two_equivalents_that_are_the_same_passage_twice(self) -> None:
+        self.assert_fails_with(
+            {"sh-1": [equivalent(), equivalent(quote=QUOTE_P3_OVERLAPPING)]},
+            "by more than half",
+        )
+
+    def test_unknown_key_is_a_typo_not_a_feature(self) -> None:
+        # 'role' is a gold passage's key; every equivalent is an answer.
+        self.assert_fails_with({"sh-1": [equivalent(role="answer")]}, "unknown key")
+
+    def test_missing_key(self) -> None:
+        passage = equivalent()
+        del passage["page"]
+        self.assert_fails_with({"sh-1": [passage]}, "missing key 'page'")
+
+    def test_empty_list_for_a_question(self) -> None:
+        self.assert_fails_with({"sh-1": []}, "non-empty list")
+
+    def test_wrong_amendment_number(self) -> None:
+        self.assert_fails_with({"sh-1": [equivalent()]}, "'amendment' must be 1", amendment=2)
+
+    def test_a_multi_hop_equivalent_is_checked_the_same_way(self) -> None:
+        self.assertEqual(self.run_on({"mh-1": [equivalent()]}), [])
+
+    def test_exit_codes(self) -> None:
+        args = [
+            "--corpus",
+            str(self.corpus),
+            "--questions",
+            str(self.questions_path),
+        ]
+
+        def exit_code() -> int:
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                return validate.main(args)
+
+        # main() finds equivalents.json beside the question set on its own.
+        self.questions_path.write_text(json.dumps([single_hop()]), encoding="utf-8")
+        self.equivalents_path.write_text(
+            json.dumps({"amendment": 1, "passages": {"sh-1": [equivalent()]}}), encoding="utf-8"
+        )
+        self.assertEqual(exit_code(), 0)
+
+        self.equivalents_path.write_text(
+            json.dumps({"amendment": 1, "passages": {"sh-1": [equivalent(page=2)]}}),
+            encoding="utf-8",
+        )
+        self.assertEqual(exit_code(), 1)
 
 
 if __name__ == "__main__":
