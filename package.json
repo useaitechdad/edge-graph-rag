@@ -9,6 +9,7 @@
     "dev": "./scripts/dev.sh",
     "deploy": "./scripts/deploy.sh",
     "setup": "./scripts/setup-cloudflare.sh",
+    "eval": "./scripts/eval.sh",
     "migrate:local": "./scripts/migrate-local.sh",
     "migrate:remote": "./scripts/migrate-remote.sh",
     "test": "vitest run && npm run test:eval",

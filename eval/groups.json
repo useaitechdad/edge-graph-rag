@@ -1,0 +1,34 @@
+{
+	"note": "The three groups eval/DESIGN.md reports on, one label per question. Derived from the 'Answer-clause classification' table in eval/questions.notes.md, which is prose and not machine-readable; questions.json is unchanged and stays frozen. 'single' is the control and is implied by kind 'single-hop' — it is written out here anyway so eval/run.py can check the two sources agree instead of trusting one.",
+	"labels": {
+		"single": "single-hop: the control group",
+		"multi-specific": "multi-hop whose final clause describes the answer passage's own subject, so plain vector search can land on it without resolving the hop",
+		"multi-generic": "multi-hop whose final clause names an attribute every report has, so only the hop says which document is wanted"
+	},
+	"groups": {
+		"q01": "single",
+		"q02": "single",
+		"q03": "single",
+		"q04": "single",
+		"q05": "single",
+		"q06": "single",
+		"q07": "single",
+		"q08": "single",
+		"q09": "single",
+		"q10": "single",
+		"q11": "multi-specific",
+		"q12": "multi-generic",
+		"q13": "multi-specific",
+		"q14": "multi-generic",
+		"q15": "multi-specific",
+		"q16": "multi-generic",
+		"q17": "multi-specific",
+		"q18": "multi-generic",
+		"q19": "multi-specific",
+		"q20": "multi-specific",
+		"q21": "multi-specific",
+		"q22": "multi-specific",
+		"q23": "multi-generic",
+		"q24": "multi-specific"
+	}
+}
