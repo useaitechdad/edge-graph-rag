@@ -1,0 +1,123 @@
+{
+  "corpus": "NASA mission mishap and failure investigation reports",
+  "purpose": "Rights-clean multi-hop Graph RAG evaluation corpus. Documents were chosen because their stories interlock through shared contractors (Lockheed Martin), shared review-board members, a shared mishap-investigation procedure (NPD/NPG/NPR 8621.1), shared heritage hardware and shared root-cause themes.",
+  "fetched": "2026-09-18",
+  "extraction": {
+    "tool": "PyMuPDF (fitz) page.get_text() default mode",
+    "page_marker": "\\f--- page N ---\\n before each page's text; each page block ends with exactly one newline",
+    "encoding": "utf-8, LF newlines, no normalisation, no OCR",
+    "reproduce": "python3 scripts/fetch-corpus.py"
+  },
+  "rights_classes": {
+    "us-gov-work": "Authored by a NASA board / NASA organisation; a work of the US Government, no copyright asserted.",
+    "copyright-notice-present": "The document itself carries a copyright notice.",
+    "unclear": "No copyright notice in the document, but authorship or a distribution marking means public-domain status should not be assumed. Owner decides."
+  },
+  "documents": [
+    {
+      "slug": "mars-climate-orbiter-mib-phase-i",
+      "title": "Mars Climate Orbiter Mishap Investigation Board Phase I Report",
+      "year": 1999,
+      "authoring_org": "Mars Climate Orbiter Mishap Investigation Board, NASA (chair: Arthur G. Stephenson, Director, Marshall Space Flight Center)",
+      "url": "https://llis.nasa.gov/llis_lib/pdf/1009464main1_0641-mr.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "d2d88108a22d26f8fdeeacc68aa37af2b195f2829ad768619b31c78847b6681f",
+      "pages": 48,
+      "characters": 86357,
+      "rights_class": "us-gov-work",
+      "verbatim_notice": null,
+      "rights_note": "No copyright, distribution or export notice anywhere in the document. Signed by a NASA mishap investigation board and approved by two NASA Associate Administrators (p3); hosted on llis.nasa.gov.",
+      "text_quality": "Native digital text layer (Word-produced PDF), clean throughout; all 48 pages carry text; figures on pp11-12 are images and their labels are only partly captured."
+    },
+    {
+      "slug": "mco-mib-project-management",
+      "title": "Report on Project Management in NASA by the Mars Climate Orbiter Mishap Investigation Board",
+      "year": 2000,
+      "authoring_org": "Mars Climate Orbiter Mishap Investigation Board, NASA (chair: Arthur G. Stephenson, Director, Marshall Space Flight Center)",
+      "url": "https://discovery.larc.nasa.gov/PDF_FILES/mars_climate_orbiter_phaseII.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "a533a8acd3637446d238dd55c8509ec30a9ecf29e552527820192087569d154d",
+      "pages": 118,
+      "characters": 236549,
+      "rights_class": "us-gov-work",
+      "verbatim_notice": null,
+      "rights_note": "No copyright, distribution or export notice. Same NASA board as the Phase I report; this is the Phase II product, dated March 13, 2000. It reprints the Phase I report as Appendix B (pp58-105), so the corpus contains that text twice.",
+      "text_quality": "Native digital text layer, clean throughout; all 118 pages carry text. Appendix F tables (pp114-118) lose column alignment but keep every cell value."
+    },
+    {
+      "slug": "mars-polar-lander-ds2-loss",
+      "title": "Report on the Loss of the Mars Polar Lander and Deep Space 2 Missions (JPL D-18709)",
+      "year": 2000,
+      "authoring_org": "JPL Special Review Board, Jet Propulsion Laboratory, California Institute of Technology (chair: John Casani; deputy chair: Charles Whetsel)",
+      "url": "https://ntrs.nasa.gov/api/citations/20000061966/downloads/20000061966.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "8e569427537dab12ca508971b1fc02960533f978cca108e786a87c4ef6a510fe",
+      "pages": 178,
+      "characters": 484997,
+      "rights_class": "unclear",
+      "verbatim_notice": null,
+      "rights_note": "NOT a NASA-board report: authored by a JPL Special Review Board appointed by the JPL Deputy Director, and the title page (p1) reads 'JPL / Jet Propulsion Laboratory / California Institute of Technology / JPL D-18709'. The document itself carries no copyright, distribution or export notice. The NTRS record (citation 20000032458's sibling, 20000061966) sets distribution 'PUBLIC' and copyright determinationType 'GOV_PUBLIC_USE_PERMITTED' but belongsToUsGov false, with author affiliations 'California Inst. of Tech.' Caltech copyright is therefore not excluded. OWNER DECISION NEEDED.",
+      "text_quality": "OCR of a scanned NTRS copy. Body prose is accurate (spot-checked p45 against the page image, word-for-word) but line breaks are aggressive (one phrase per line), table structure is lost, and the front-matter/TOC pages (pp3-8) are heavily garbled. 13 pages are figure-only with no text."
+    },
+    {
+      "slug": "mars-program-independent-assessment",
+      "title": "Mars Program Independent Assessment Team Report",
+      "year": 2000,
+      "authoring_org": "Mars Program Independent Assessment Team (MPIAT), chartered by the NASA Administrator; chair A. Thomas Young (Lockheed Martin, ret.); published via NASA Headquarters",
+      "url": "https://ntrs.nasa.gov/api/citations/20000032458/downloads/20000032458.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "92c04ec79a77bf0defe9275a12da55a4d3940479223d89ece5cb7d7f88420421",
+      "pages": 65,
+      "characters": 77034,
+      "rights_class": "unclear",
+      "verbatim_notice": null,
+      "rights_note": "No copyright, distribution or export notice in the document. Chartered by the NASA Administrator and filed under NASA Headquarters in NTRS, but the team is majority non-government (chair A. Thomas Young of Lockheed Martin; members from Hughes Space and Communications, academia). NTRS record 20000032458: distribution 'PUBLIC', copyright determinationType 'GOV_PUBLIC_USE_PERMITTED', belongsToUsGov false. OWNER DECISION NEEDED.",
+      "text_quality": "OCR of a scanned NTRS copy of a briefing package. The narrative prose under each chart extracts accurately, but the viewgraph charts themselves are white-on-black images and their bullet text is NOT in the text layer, so roughly half the document's content is missing. First line of each paragraph often loses word spacing."
+    },
+    {
+      "slug": "genesis-mib-vol-i",
+      "title": "Genesis Mishap Investigation Board Report, Volume I",
+      "year": 2006,
+      "authoring_org": "Genesis Mishap Investigation Board, NASA (chair: Dr. Michael Ryschkewitsch, Goddard Space Flight Center)",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/01/149414main_genesis_mib.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "d928c4a027b96286bcf8c3e7994087b4905012b108e2a8809f89853323f81e09",
+      "pages": 231,
+      "characters": 356268,
+      "rights_class": "us-gov-work",
+      "verbatim_notice": "Trade names or manufacturers' names are used in this report for identification only. This usage does not constitute an official endorsement, either expressed or implied, by the National Aeronautics and Space Administration.",
+      "rights_note": "The only front-matter notice is the trade-names disclaimer above (p2); no copyright and no export marking on the cover. Board established 10 September 2004 (letter, p99); PDF produced April 2006. Three passages inside are marked 'Proprietary and/or Export Control Sensitive text removed' (pp~180, ~200, ~232 of the text file), i.e. this is the redacted public-release version.",
+      "text_quality": "Native digital text layer (InDesign), clean throughout; soft hyphens appear as '­' inside words broken at line ends. 7 pages are blank verso or figure-only. 231 pages, above the preferred 150 but under the 250 cap."
+    },
+    {
+      "slug": "contour-mib",
+      "title": "CONTOUR (Comet Nucleus Tour) Mishap Investigation Board Report",
+      "year": 2003,
+      "authoring_org": "CONTOUR Mishap Investigation Board, NASA (chair: Theron Bradley, Jr., NASA Chief Engineer)",
+      "url": "https://discovery.larc.nasa.gov/pdf_files/Contour_Mishap_Investigation.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "ae69f963548d592c052ae1bfcab5e28fa444d7ad3537938421d56a8c08ca6da1",
+      "pages": 65,
+      "characters": 78659,
+      "rights_class": "unclear",
+      "verbatim_notice": "MEMORANDUM PLEASE BE ADVISED While the actual document is ITAR controlled, this document has been edited to remove all International Traffic in Arms Regulation (ITAR) controlled and proprietary information. || International Traffic in Arms Regulations (ITAR) Notice -- This document contains information which falls under the purview of the U.S. Munitions List (USML), as defined in the International Traffic in Arms Regulations (ITAR), 22 CFR 120-130, and is export controlled. It shall not be transferred to foreign nationals in the U.S. or abroad, without specific approval of a knowledgeable NASA export control official, and/or unless an export license/license exemption is obtained/available from the United States Department of State. Violations of these regulations are punishable by fine, imprisonment, or both. || Trade names or manufacturers' names are used in this report for identification only. This usage does not constitute an official endorsement, either expressed or implied, by the National Aeronautics and Space Administration.",
+      "rights_note": "Authorship is a NASA board, so copyright is not the issue; DISTRIBUTION is. The public copy carries a cover memo (p1) stating the ITAR-controlled and proprietary material has been removed, yet the report's own cover page (p2) still bears the full ITAR export-control notice, and six body passages are marked 'Proprietary and/or Export Control Sensitive text removed'. Redistributing an ITAR-marked PDF from a public GitHub repo is an owner call. OWNER DECISION NEEDED.",
+      "text_quality": "Native digital text layer, clean; all 65 pages carry text. The board signature page (p5) is a scanned image with no text layer, so the five board members' names appear only in the appendix roster (p34)."
+    },
+    {
+      "slug": "noaa-n-prime-mishap",
+      "title": "NOAA N-PRIME Mishap Investigation Final Report",
+      "year": 2004,
+      "authoring_org": "NOAA N-PRIME Mishap Investigation Board, NASA (chair: Christopher Scolese, Deputy Associate Administrator for Space Science, NASA Headquarters)",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/01/65776main_noaa_np_mishap.pdf",
+      "fetched": "2026-09-18",
+      "sha256": "753938cc1d3770436851e975c1ffb305ffe76422366f2631ceaa5076cdf42154",
+      "pages": 113,
+      "characters": 192490,
+      "rights_class": "us-gov-work",
+      "verbatim_notice": "As requested on September 27, 2004, we have completed our review of the NOAA N Prime Mishap Report (Report) under NASA Procedural Requirements (NPR) 8621.1, \"Procedural Requirements for Mishap Reporting, Investigating, and Recordkeeping.\" We also reviewed the endorsement pages from the Deputy Associate Administrator of the Science Mission Directorate and the Chief, Office of Safety and Mission Assurance. Based on our review, we recommend releasing the Report subject to the comments below. In an e-mail from Jeff Smith, Director, Civil Space West Coast Operations, Lockheed Martin, dated October 1, 2004, Lockheed Martin has identified several sections of the report which include information that they consider proprietary information. Also, the External Relations Office has identified information in the Report which is export controlled. Both the proprietary information and the export-controlled information should be redacted before release of the Report.",
+      "rights_note": "NASA-authored (NASA HQ letterhead cover, NASA MIB, endorsed by Bryan O'Connor, Chief OSMA). The verbatim notice above is the NASA Office of General Counsel release memorandum bound as page 2 of the PDF; it is the release authority for this public version, from which Lockheed Martin proprietary and export-controlled passages were redacted (the redactions are visible in the body as 'Proprietary Information' / 'Export Controlled' markers).",
+      "text_quality": "MIXED: pages 1-21 (cover, General Counsel letter, endorsements, OSMA critique, board roster images, TOC) are scanned images with NO text layer and are therefore empty in the .txt; pages 22-113 are native digital text and are clean. Not OCR'd, per instruction. The board roster IS recoverable because it is repeated as digital text on page 24."
+    }
+  ]
+}
