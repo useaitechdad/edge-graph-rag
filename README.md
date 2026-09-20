@@ -87,6 +87,7 @@ extractions produce byte-identical bytes.
 | `eval/run.py` | The eval run: `/search` per question, recall at 10 and at 5, writes a receipt |
 | `eval/groups.json` | Which multi-hop questions have a specific final clause and which a generic one |
 | `eval/limits.md` | M5 analysis: single-hop control, 1-hop vs 2-hop, hub node dilution, latency, and the routing rule |
+| `docs/CLOUDFLARE_PROOF.md` | Verification receipt: exact Cloudflare D1 table counts (5,036 nodes, 9,998 edges) and Vectorize index stats |
 | `corpus/MANIFEST.json` | The seven reports: official URL, sha256, rights note. The files themselves are downloaded by `scripts/fetch-corpus.py`, never redistributed from here |
 | `runs/` | One receipt per ingest and per eval run. `runs/tmp/` is scratch — progress and cached embeddings — and is ignored |
 | `scripts/` | Every operational step. Nothing in this project is hand-typed at a shell |
