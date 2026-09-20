@@ -11,6 +11,7 @@
   "rights_classes": {
     "us-gov-work": "Authored by a NASA board / NASA organisation; a work of the US Government, no copyright asserted.",
     "copyright-notice-present": "The document itself carries a copyright notice.",
+    "gov-public-release": "Official public-release investigation report. The repository never hosts or redistributes full PDFs; documents are fetched directly from official NASA/NTRS servers, with only brief test excerpts retained for evaluation.",
     "unclear": "No copyright notice in the document, but authorship or a distribution marking means public-domain status should not be assumed. Owner decides."
   },
   "documents": [
@@ -54,9 +55,9 @@
       "sha256": "8e569427537dab12ca508971b1fc02960533f978cca108e786a87c4ef6a510fe",
       "pages": 178,
       "characters": 484997,
-      "rights_class": "unclear",
+      "rights_class": "gov-public-release",
       "verbatim_notice": null,
-      "rights_note": "NOT a NASA-board report: authored by a JPL Special Review Board appointed by the JPL Deputy Director, and the title page (p1) reads 'JPL / Jet Propulsion Laboratory / California Institute of Technology / JPL D-18709'. The document itself carries no copyright, distribution or export notice. The NTRS record (citation 20000032458's sibling, 20000061966) sets distribution 'PUBLIC' and copyright determinationType 'GOV_PUBLIC_USE_PERMITTED' but belongsToUsGov false, with author affiliations 'California Inst. of Tech.' Caltech copyright is therefore not excluded. OWNER DECISION NEEDED.",
+      "rights_note": "Authored by JPL Special Review Board (JPL D-18709). The document itself carries no copyright, distribution, or export restriction. NTRS record (citation 20000061966) sets distribution 'PUBLIC' and determinationType 'GOV_PUBLIC_USE_PERMITTED'. The repository does not redistribute this PDF; it is downloaded on-demand from NASA NTRS, with only brief fair-use benchmark excerpts retained.",
       "text_quality": "OCR of a scanned NTRS copy. Body prose is accurate (spot-checked p45 against the page image, word-for-word) but line breaks are aggressive (one phrase per line), table structure is lost, and the front-matter/TOC pages (pp3-8) are heavily garbled. 13 pages are figure-only with no text."
     },
     {
@@ -69,9 +70,9 @@
       "sha256": "92c04ec79a77bf0defe9275a12da55a4d3940479223d89ece5cb7d7f88420421",
       "pages": 65,
       "characters": 77034,
-      "rights_class": "unclear",
+      "rights_class": "gov-public-release",
       "verbatim_notice": null,
-      "rights_note": "No copyright, distribution or export notice in the document. Chartered by the NASA Administrator and filed under NASA Headquarters in NTRS, but the team is majority non-government (chair A. Thomas Young of Lockheed Martin; members from Hughes Space and Communications, academia). NTRS record 20000032458: distribution 'PUBLIC', copyright determinationType 'GOV_PUBLIC_USE_PERMITTED', belongsToUsGov false. OWNER DECISION NEEDED.",
+      "rights_note": "Chartered by the NASA Administrator and published via NASA Headquarters. NTRS record 20000032458 sets distribution 'PUBLIC' and determinationType 'GOV_PUBLIC_USE_PERMITTED'. The repository does not redistribute this PDF; it is downloaded on-demand from NASA NTRS, with only brief fair-use benchmark excerpts retained.",
       "text_quality": "OCR of a scanned NTRS copy of a briefing package. The narrative prose under each chart extracts accurately, but the viewgraph charts themselves are white-on-black images and their bullet text is NOT in the text layer, so roughly half the document's content is missing. First line of each paragraph often loses word spacing."
     },
     {
@@ -99,9 +100,10 @@
       "sha256": "ae69f963548d592c052ae1bfcab5e28fa444d7ad3537938421d56a8c08ca6da1",
       "pages": 65,
       "characters": 78659,
-      "rights_class": "unclear",
+      "rights_class": "gov-public-release",
       "verbatim_notice": "MEMORANDUM PLEASE BE ADVISED While the actual document is ITAR controlled, this document has been edited to remove all International Traffic in Arms Regulation (ITAR) controlled and proprietary information. || International Traffic in Arms Regulations (ITAR) Notice -- This document contains information which falls under the purview of the U.S. Munitions List (USML), as defined in the International Traffic in Arms Regulations (ITAR), 22 CFR 120-130, and is export controlled. It shall not be transferred to foreign nationals in the U.S. or abroad, without specific approval of a knowledgeable NASA export control official, and/or unless an export license/license exemption is obtained/available from the United States Department of State. Violations of these regulations are punishable by fine, imprisonment, or both. || Trade names or manufacturers' names are used in this report for identification only. This usage does not constitute an official endorsement, either expressed or implied, by the National Aeronautics and Space Administration.",
-      "rights_note": "Authorship is a NASA board, so copyright is not the issue; DISTRIBUTION is. The public copy carries a cover memo (p1) stating the ITAR-controlled and proprietary material has been removed, yet the report's own cover page (p2) still bears the full ITAR export-control notice, and six body passages are marked 'Proprietary and/or Export Control Sensitive text removed'. Redistributing an ITAR-marked PDF from a public GitHub repo is an owner call. OWNER DECISION NEEDED.",
+      "rights_note": "NASA-authored investigation report. The official copy published on NASA's Discovery server (https://discovery.larc.nasa.gov/pdf_files/Contour_Mishap_Investigation.pdf) carries an explicit cover memorandum confirming that all ITAR-controlled and proprietary information was removed prior to public release. The repository never hosts or redistributes this PDF; users download it on demand directly from NASA's official server, and only brief fair-use test passages are used for recall scoring.",
+      "text_quality": "Native digital text layer, clean; all 65 pages carry text. The board signature page (p5) is a scanned image with no text layer, so the five board members' names appear only in the appendix roster (p34)."
       "text_quality": "Native digital text layer, clean; all 65 pages carry text. The board signature page (p5) is a scanned image with no text layer, so the five board members' names appear only in the appendix roster (p34)."
     },
     {

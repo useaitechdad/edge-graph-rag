@@ -16,6 +16,11 @@ export interface Env {
 	VECTORS: Vectorize;
 	/** Workers AI, for @cf/baai/bge-base-en-v1.5 embeddings. Remote binding. */
 	AI: Ai;
+	/** Optional API key / secret for endpoint protection.
+	 * If set in environment secrets (wrangler secret put API_KEY) or .dev.vars,
+	 * requests to /search must supply `Authorization: Bearer <API_KEY>`.
+	 */
+	API_KEY?: string;
 }
 
 /** Vectorize returns at most 50 matches when values or metadata come with them,
@@ -38,6 +43,20 @@ export default {
 			if (request.method !== 'GET') {
 				return json({ error: 'method not allowed' }, 405, { allow: 'GET' });
 			}
+
+			// Endpoint security: enforce authentication if API_KEY is configured
+			if (env.API_KEY) {
+				const authHeader = request.headers.get('Authorization') ?? '';
+				const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+				if (!token || token !== env.API_KEY) {
+					return json(
+						{ error: 'unauthorized: valid Bearer token required in Authorization header' },
+						401,
+						{ 'WWW-Authenticate': 'Bearer error="invalid_token"' }
+					);
+				}
+			}
+
 			const mode = url.searchParams.get('retriever');
 			const retriever =
 				mode === 'graph'

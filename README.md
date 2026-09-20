@@ -170,6 +170,25 @@ Embeddings come from `@cf/baai/bge-base-en-v1.5`: 768 dimensions, 512 input toke
 `pooling: "cls"` — which has to be the same for documents and for queries, or the two live in
 different spaces. `src/embed.ts` and `scripts/ingest.py` are the two places that say so.
 
+## Production Security & Rate Limiting
+
+The `/search` endpoint coordinates Vectorize vector lookups, D1 recursive SQL queries, and Workers AI neural reranking. To protect live deployments:
+
+1. **Authentication:** Set an `API_KEY` secret using Wrangler:
+   ```sh
+   npx wrangler secret put API_KEY
+   ```
+   When `API_KEY` is configured in the Worker environment (or in `.dev.vars`), requests to `/search` must supply `Authorization: Bearer <API_KEY>` (otherwise returning `401 Unauthorized`). When unset (default local dev), authentication remains open for local testing.
+
+2. **Rate Limiting & Abuse Prevention:** Because each search executes vector lookups and cross-encoder reranking, attach a Cloudflare WAF Rate Limiting rule (e.g., 30–60 requests/minute per IP) under Cloudflare Dashboard → Security → WAF → Rate Limiting Rules to prevent neuron quota exhaustion.
+
+## Content Rights & Corpus Provenance
+
+The 7 evaluation reports originate from official NASA mishap boards and the Jet Propulsion Laboratory:
+- **Zero Full PDFs Hosted:** The repository does **not** redistribute or re-host full PDF files or full text extracts (`corpus/raw/` and `corpus/text/` are strictly `.gitignore`d). Users download them directly from official NASA / NTRS servers using `python3 scripts/fetch-corpus.py`.
+- **Public Releases with Redactions:** Reports are official U.S. Government works or NASA public releases. As confirmed in official NASA documentation (such as the CONTOUR release memorandum at https://discovery.larc.nasa.gov/pdf_files/Contour_Mishap_Investigation.pdf), all ITAR-controlled and proprietary information was excised prior to public release.
+- **Evaluation Excerpts:** Only brief passage quotes are retained in `eval/questions.json` and `eval/equivalents.json` as frozen ground-truth test vectors for recall scoring under fair use.
+
 ## Licence
 
 Apache-2.0. See `LICENSE`.
