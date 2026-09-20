@@ -1,0 +1,36 @@
+{
+	"milestone": "M2",
+	"started_utc": "2026-09-19T04:55:47+00:00",
+	"finished_utc": "2026-09-19T04:55:47+00:00",
+	"wall_seconds": 0.0,
+	"dry_run": true,
+	"model": "@cf/baai/bge-base-en-v1.5",
+	"pooling": "cls",
+	"dimensions": 768,
+	"index": "edge-graph-rag-chunks",
+	"counts": {
+		"chunks": 5,
+		"documents": 1,
+		"d1_chunk_rows_written": 5,
+		"vectors_upserted": 5,
+		"chunks_embedded_this_run": 5,
+		"embeddings_reused_from_cache": 0
+	},
+	"batch_sizes": {
+		"embed": 50,
+		"vectorize_upsert": 1000,
+		"d1_chunk_rows_per_statement": 16,
+		"d1_document_rows_per_statement": 20
+	},
+	"http_status_counts": {},
+	"cost": {
+		"input_characters": 6497,
+		"estimated_input_tokens": 1624,
+		"estimate_basis": "characters / 4; there is no tokenizer offline, so this is an estimate and not a billed figure",
+		"neurons_billed_this_run": 0.0,
+		"requests_carrying_a_neuron_header": 0,
+		"usage_headers_seen": {},
+		"unexpected_response_fields": [],
+		"note": "Workers AI prices each request in a cf-ai-neurons response header; neurons_billed_this_run is the sum over this run, and is 0 when every embedding came from the local cache. usage_headers_seen keeps the last value of each usage header as observed."
+	}
+}
